@@ -1,0 +1,396 @@
+# Instincts generated from https://github.com/alowave223/leaf-asp
+# Generated: 2026-03-26T20:36:35.221Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: leaf-asp-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/alowave223/leaf-asp
+---
+
+# Leaf Asp Commit Length
+
+## Action
+
+Keep commit messages concise (~41 characters)
+
+## Evidence
+
+- Average commit message length: 41 chars
+- Based on 7 commits
+
+---
+id: leaf-asp-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/alowave223/leaf-asp
+---
+
+# Leaf Asp Naming Files
+
+## Action
+
+Use PascalCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: PascalCase
+
+---
+id: leaf-asp-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/alowave223/leaf-asp
+---
+
+# Leaf Asp Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: leaf-asp-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/alowave223/leaf-asp
+---
+
+# Leaf Asp Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: leaf-asp-test-separate
+trigger: "when writing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/alowave223/leaf-asp
+---
+
+# Leaf Asp Test Separate
+
+## Action
+
+Place tests in the tests/ or __tests__/ directory, mirroring src structure
+
+## Evidence
+
+- Separate test directory pattern detected
+- Tests live in dedicated test folders
+
+---
+id: leaf-asp-workflow-batch-integration-workflow
+trigger: "when doing batch integration workflow"
+confidence: 0.65
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/alowave223/leaf-asp
+---
+
+# Leaf Asp Workflow Batch Integration Workflow
+
+## Action
+
+Follow the batch-integration-workflow workflow:
+1. Prepare a batch of related changes from ASP or upstream.
+2. Update core Java implementation files (e.g., serialization, util, exceptions).
+3. Update or add server-side files (e.g., config modules, async tasks, protocol handlers).
+4. Update or add plugin-related files (e.g., command parsers, resource templates).
+5. Update patch files in leaf-server/minecraft-patches or paper-patches.
+6. Update build scripts or configuration files as needed.
+7. Commit all related changes together under a batch commit message.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~3x per month
+- Files: core/src/main/java/com/infernalsuite/asp/**, leaf-server/src/main/java/org/dreeam/leaf/**, leaf-server/src/main/java/org/leavesmc/leaves/**
+
+---
+id: leaf-asp-workflow-add-or-update-config-module
+trigger: "when doing add or update config module"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/alowave223/leaf-asp
+---
+
+# Leaf Asp Workflow Add Or Update Config Module
+
+## Action
+
+Follow the add-or-update-config-module workflow:
+1. Create or update a Java file in leaf-server/src/main/java/org/dreeam/leaf/config/modules/**.
+2. If needed, update EnumConfigCategory.java to register the new config.
+3. Optionally, update or add annotation files (e.g., Experimental.java, DoNotLoad.java).
+4. Update related configuration resource files if necessary.
+5. Commit changes with a message referencing the config module.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: leaf-server/src/main/java/org/dreeam/leaf/config/modules/**, leaf-server/src/main/java/org/dreeam/leaf/config/EnumConfigCategory.java, leaf-server/src/main/java/org/dreeam/leaf/config/annotations/**
+
+---
+id: leaf-asp-workflow-add-or-update-patch-file
+trigger: "when doing add or update patch file"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/alowave223/leaf-asp
+---
+
+# Leaf Asp Workflow Add Or Update Patch File
+
+## Action
+
+Follow the add-or-update-patch-file workflow:
+1. Create or update a .patch file in leaf-server/minecraft-patches or leaf-server/paper-patches.
+2. If necessary, update related Java files that interact with the patch.
+3. Commit the patch file and any supporting code changes.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: leaf-server/minecraft-patches/**, leaf-server/paper-patches/**
+
+---
+id: leaf-asp-instinct-class-naming
+trigger: "When creating a new Java class"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: alowave223/leaf-asp
+---
+
+# Leaf Asp Instinct Class Naming
+
+## Action
+
+Name the class using PascalCase
+
+## Evidence
+
+- Pattern in files: core/src/main/java/com/infernalsuite/asp/**, leaf-server/src/main/java/org/dreeam/leaf/**
+
+---
+id: leaf-asp-instinct-file-naming
+trigger: "When creating a new Java file"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: alowave223/leaf-asp
+---
+
+# Leaf Asp Instinct File Naming
+
+## Action
+
+Name the file using PascalCase to match the class name
+
+## Evidence
+
+- Pattern in files: core/src/main/java/com/infernalsuite/asp/**, leaf-server/src/main/java/org/dreeam/leaf/**
+
+---
+id: leaf-asp-instinct-function-naming
+trigger: "When defining a function or method"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: alowave223/leaf-asp
+---
+
+# Leaf Asp Instinct Function Naming
+
+## Action
+
+Name the function using camelCase
+
+## Evidence
+
+- Pattern in files: core/src/main/java/com/infernalsuite/asp/**, leaf-server/src/main/java/org/dreeam/leaf/**
+
+---
+id: leaf-asp-instinct-constant-naming
+trigger: "When defining a constant"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: alowave223/leaf-asp
+---
+
+# Leaf Asp Instinct Constant Naming
+
+## Action
+
+Name the constant using SCREAMING_SNAKE_CASE
+
+## Evidence
+
+- Pattern in files: core/src/main/java/com/infernalsuite/asp/**, leaf-server/src/main/java/org/dreeam/leaf/**
+
+---
+id: leaf-asp-instinct-import-style
+trigger: "When importing modules in Java"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: alowave223/leaf-asp
+---
+
+# Leaf Asp Instinct Import Style
+
+## Action
+
+Use relative import paths
+
+## Evidence
+
+- Pattern in files: core/src/main/java/com/infernalsuite/asp/**
+
+---
+id: leaf-asp-instinct-export-style
+trigger: "When exporting classes or functions"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: alowave223/leaf-asp
+---
+
+# Leaf Asp Instinct Export Style
+
+## Action
+
+Use named exports (public classes/methods)
+
+## Evidence
+
+- Pattern in files: core/src/main/java/com/infernalsuite/asp/**
+
+---
+id: leaf-asp-instinct-test-location
+trigger: "When adding or updating tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: alowave223/leaf-asp
+---
+
+# Leaf Asp Instinct Test Location
+
+## Action
+
+Place test files in a separate directory from source files
+
+## Evidence
+
+- Architecture: testLocation is 'separate'
+
+---
+id: leaf-asp-instinct-commit-format
+trigger: "When writing a commit message"
+confidence: 0.85
+domain: git
+source: repo-analysis
+source_repo: alowave223/leaf-asp
+---
+
+# Leaf Asp Instinct Commit Format
+
+## Action
+
+Write a freeform message, typically starting with a capital letter, describing the change; batch commits use 'Batch X (part Y/Z) - [description]'
+
+## Evidence
+
+- Seen in commits: 'Batch 14 (part 1/9) - ASP integration into Leaf', 'Add Leaf server implementation with ASP integration'
+
+---
+id: leaf-asp-instinct-batch-integration
+trigger: "When integrating upstream changes or large feature sets from ASP into Leaf"
+confidence: 0.95
+domain: workflow
+source: repo-analysis
+source_repo: alowave223/leaf-asp
+---
+
+# Leaf Asp Instinct Batch Integration
+
+## Action
+
+Prepare a batch of related changes, update core/server/plugin/patch/build files as needed, and commit all changes together under a batch commit message
+
+## Evidence
+
+- Workflow: batch-integration-workflow
+- Seen in commits: 'Batch 14 (part 1/9) - ASP integration into Leaf'
+
+---
+id: leaf-asp-instinct-add-config-module
+trigger: "When introducing a new configuration option or modifying an existing one for server behavior"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: alowave223/leaf-asp
+---
+
+# Leaf Asp Instinct Add Config Module
+
+## Action
+
+Create or update a Java file in config/modules, update EnumConfigCategory.java if needed, optionally update annotation files, and commit with a message referencing the config module
+
+## Evidence
+
+- Workflow: add-or-update-config-module
+- Pattern in files: leaf-server/src/main/java/org/dreeam/leaf/config/modules/**
+
+---
+id: leaf-asp-instinct-add-patch-file
+trigger: "When a new patch is needed for the server or an existing patch must be updated"
+confidence: 0.85
+domain: workflow
+source: repo-analysis
+source_repo: alowave223/leaf-asp
+---
+
+# Leaf Asp Instinct Add Patch File
+
+## Action
+
+Create or update a .patch file in minecraft-patches or paper-patches, update related Java files if necessary, and commit all changes
+
+## Evidence
+
+- Workflow: add-or-update-patch-file
+- Pattern in files: leaf-server/minecraft-patches/**, leaf-server/paper-patches/**
+
