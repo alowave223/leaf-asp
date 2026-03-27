@@ -7,4 +7,3 @@
 +        if(chunk instanceof LevelChunk levelChunk && levelChunk.level instanceof com.infernalsuite.asp.level.SlimeLevelInstance) return true; //ASP - prevent normal saving
          return chunk instanceof LevelChunk levelChunk && levelChunk.mustNotSave;
      }
- 
