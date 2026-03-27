@@ -1,0 +1,97 @@
+ASP -> Leaf Integration Patch Report
+=====================================
+Date: 2026-03-26
+Source: AdvancedSlimePaper (ASP) mc/1.21.4
+Target: Leaf ver/1.21.4
+
+SUMMARY
+-------
+All functional ASP patches successfully applied to Leaf.
+Compilation: SUCCESSFUL (0 errors, warnings only)
+Patch application: SUCCESSFUL (./gradlew applyAllPatches)
+
+PATCHES APPLIED
+===============
+
+1. Minecraft Source Patches (4/5 applied)
+-----------------------------------------
+These run BEFORE feature patches and modify the decompiled minecraft source.
+
+  [OK] ca/spottedleaf/moonrise/paper/PaperHooks.java.patch
+       - Prevents normal chunk saving for SlimeLevelInstance worlds
+
+  [OK] ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java.patch
+       - Disables saves on close for SlimeLevelInstance worlds
+
+  [OK] ca/spottedleaf/moonrise/patches/chunk_system/scheduling/NewChunkHolder.java.patch
+       - Custom chunk unloading for slime worlds
+
+  [OK] ca/spottedleaf/moonrise/patches/chunk_system/scheduling/task/ChunkLoadTask.java.patch
+       - Custom chunk loading via CommonLoadTask for slime worlds
+
+  [SKIPPED] net/minecraft/server/level/ServerLevel.java.patch
+       - Converted to feature patch (0195) instead, because the source patch
+         would shift line numbers and break 18 existing Leaf feature patches
+         that also modify ServerLevel.java
+
+2. Minecraft Feature Patches (7 applied)
+----------------------------------------
+These run AFTER source patches as git commits.
+
+  [OK] 0195-ASP-ServerLevel-integration.patch
+       - Adds slimeInstance field, delegating constructor with @Nullable bootstrap
+         parameter, and getGenerator(bootstrap) method
+
+  [OK] 0196-Disable-dragon-battle.patch
+       - Conditionally disables EndDragonFight based on SlimeProperties.DRAGON_BATTLE
+
+  [OK] 0197-World-overrides.patch
+       - Allows ASP to override default world/nether/end via MinecraftServer
+
+  [OK] 0198-Avoid-IO-call-for-UUID.patch
+       - Uses UUID.randomUUID() instead of disk IO when bootstrap != null
+
+  [OK] 0199-Prevent-config-disk-io-on-world-load.patch
+       - Replaces Paper/Gale config creation lambdas with cached ASP configs
+
+  [OK] 0200-Read-only-dimension-data-store.patch
+       - Uses ReadOnlyDimensionDataStorage for SlimeLevelInstance worlds
+
+  [OK] 0201-Fix-Gale-config-lambda-type-in-ASP-super-call.patch
+       - Fixes Gale config lambda to return GaleWorldConfiguration (Leaf-specific)
+
+3. Paper Feature Patches (2 applied)
+-------------------------------------
+  [OK] 0046-Delete-temp-folder-after-world-is-unloaded.patch
+  [OK] 0047-Prevent-config-disk-io-on-world-load.patch
+
+4. Paper File Patches (1 applied)
+----------------------------------
+  [OK] CraftServer.java.patch - World unload notification
+
+5. Access Transformers (3 added to leaf.at)
+--------------------------------------------
+  [OK] public-f EntityDataController (remove final for SlimeEntityDataLoader)
+  [OK] public-f PoiDataController (remove final for SlimePoiDataLoader)
+  [OK] public ChunkLoadTask chunkHolder
+
+6. ASP Modules Copied: api, core, plugin, loaders, importer, buildSrc
+
+7. ASP Server Source: 22 Java files + 2 new Leaf-specific files
+
+8. Build System: settings.gradle.kts, build.gradle.kts, gradle.properties,
+   libs.versions.toml, leaf-server/build.gradle.kts.patch, build-data/leaf.at
+
+LEAF-SPECIFIC ADAPTATIONS
+==========================
+1. SlimeGaleWorldConfig.java - Gale config support (ASP only handles Paper)
+2. AccessHelper.java - Reflection for private fields in files with existing patches
+3. ServerLevel source patch converted to feature patch
+4. importer :aspaper-api -> :leaf-api
+5. buildSrc paperweight-patcher plugin commented out
+
+PATCHES SKIPPED (branding/warnings only)
+==========================================
+  0001-Warning-if-people-use-old-swm-api.patch
+  0002-Warning-if-people-use-old-swm-plugin.patch
+  0003-Branding.patch
