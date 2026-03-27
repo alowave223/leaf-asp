@@ -27,7 +27,6 @@ public net.minecraft.world.level.material.FlowingFluid canHoldAnyFluid(Lnet/mine
 public net.minecraft.world.level.pathfinder.SwimNodeEvaluator allowBreaching
 public-f net.minecraft.world.entity.EntityType dimensions
 public-f net.minecraft.world.level.block.state.BlockBehaviour explosionResistance
-# ASP - AdvancedSlimePaper access transformers (only for files without existing feature patches)
 public ca.spottedleaf.moonrise.patches.chunk_system.scheduling.task.ChunkLoadTask chunkHolder
 public-f ca.spottedleaf.moonrise.patches.chunk_system.io.datacontroller.EntityDataController
 public-f ca.spottedleaf.moonrise.patches.chunk_system.io.datacontroller.PoiDataController

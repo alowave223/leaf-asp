@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: violetc <58360096+s-yh-china@users.noreply.github.com>
+Date: Thu, 3 Aug 2023 20:36:38 +0800
+Subject: [PATCH] Leaves: Replay Mod API
+
+Co-authored-by: alazeprt <nono135246@126.com>
+
+Original license: GPLv3
+Original project: https://github.com/LeavesMC/Leaves
+
+This patch is Powered by ReplayMod(https://github.com/ReplayMod)
+
+diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
+index f4e1c330b6e23ac9edde5c5644a0a41bdfde81f9..917b7cbd7647fccd9bdd70544bb0e5b6532045a7 100644
+--- a/src/main/java/org/bukkit/Bukkit.java
++++ b/src/main/java/org/bukkit/Bukkit.java
+@@ -3191,4 +3191,10 @@ public final class Bukkit {
+         server.clearBlockHighlights();
+     }
+     // Purpur end - Debug Marker API
++
++    // Leaves start - Photographer API
++    public static @NotNull org.leavesmc.leaves.entity.PhotographerManager getPhotographerManager() {
++        return server.getPhotographerManager();
++    }
++    // Leaves end - Photographer API
+ }
+diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
+index 50984d397d9ff98e82d02efc166aba61f645e491..a1b76899a416b997c6844bcaf837219ce0726496 100644
+--- a/src/main/java/org/bukkit/Server.java
++++ b/src/main/java/org/bukkit/Server.java
+@@ -2902,4 +2902,8 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+      */
+     void clearBlockHighlights();
+     // Purpur end - Debug Marker API
++
++    // Leaves start - Photographer API
++    @NotNull org.leavesmc.leaves.entity.PhotographerManager getPhotographerManager();
++    // Leaves end - Photographer API
+ }

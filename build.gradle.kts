@@ -53,8 +53,8 @@ subprojects {
 
     extensions.configure<PublishingExtension> {
         repositories {
+            maven("https://repo.infernalsuite.com/repository/maven-snapshots/") // ASP
             maven(leafMavenPublicUrl) {
-        maven("https://repo.infernalsuite.com/repository/maven-snapshots/") // ASP
                 name = "leaf"
 
                 credentials.username = System.getenv("REPO_USER")
