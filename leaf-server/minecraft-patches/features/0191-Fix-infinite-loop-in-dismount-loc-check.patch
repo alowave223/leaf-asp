@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Dreeam <61569423+Dreeam-qwq@users.noreply.github.com>
+Date: Fri, 11 Jul 2025 06:10:41 +0800
+Subject: [PATCH] Fix infinite loop in dismount loc check
+
+Very fun VineFlower decompile issue.
+
+Invert the condition to prevent infinite loop
+
+diff --git a/net/minecraft/world/entity/animal/horse/AbstractHorse.java b/net/minecraft/world/entity/animal/horse/AbstractHorse.java
+index 56dc7011ed07f0bd5870fbadde2b5c0c630c5edd..c2c14958254df77b9b18c6f4a0ea5e68fc79d44e 100644
+--- a/net/minecraft/world/entity/animal/horse/AbstractHorse.java
++++ b/net/minecraft/world/entity/animal/horse/AbstractHorse.java
+@@ -1223,7 +1223,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
+                 }
+ 
+                 mutableBlockPos.move(Direction.UP);
+-            } while (!(mutableBlockPos.getY() < d3));
++            } while (mutableBlockPos.getY() < d3); // Leaf - Fix infinite loop in dismount loc check
+         }
+ 
+         return null;

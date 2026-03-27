@@ -1,0 +1,50 @@
+From d37e8fcb453ed58b9d1b6ccc58e71314b3a167ed Mon Sep 17 00:00:00 2001
+From: Owen1212055 <23108066+Owen1212055@users.noreply.github.com>
+Date: Mon, 26 Dec 2022 11:25:35 -0500
+Subject: [PATCH 197/201] World overrides
+
+---
+ net/minecraft/server/MinecraftServer.java | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/net/minecraft/server/MinecraftServer.java b/net/minecraft/server/MinecraftServer.java
+index c6f21d5..3acf4b0 100644
+--- a/net/minecraft/server/MinecraftServer.java
++++ b/net/minecraft/server/MinecraftServer.java
+@@ -519,18 +519,33 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+             if (levelStemKey == LevelStem.NETHER) {
+                 if (this.server.getAllowNether()) {
+                     dimension = -1;
++                    // ASP START
++                    if(com.infernalsuite.asp.SlimeNMSBridgeImpl.instance().loadNetherOverride()) {
++                        continue;
++                    }
++                    // ASP END
+                 } else {
+                     continue;
+                 }
+             } else if (levelStemKey == LevelStem.END) {
+                 if (this.server.getAllowEnd()) {
+                     dimension = 1;
++                    // ASP START
++                    if(com.infernalsuite.asp.SlimeNMSBridgeImpl.instance().loadEndOverride()) {
++                        continue;
++                    }
++                    // ASP END
+                 } else {
+                     continue;
+                 }
+             } else if (levelStemKey != LevelStem.OVERWORLD) {
+                 dimension = -999;
+             }
++            // ASP START
++            else if(levelStemKey == LevelStem.OVERWORLD && com.infernalsuite.asp.SlimeNMSBridgeImpl.instance().loadOverworldOverride()) {
++                continue;
++            }
++            // ASP END
+ 
+             // Migration of old CB world folders...
+             String worldType = (dimension == -999) ? levelStemKey.location().getNamespace() + "_" + levelStemKey.location().getPath() : org.bukkit.World.Environment.getEnvironment(dimension).toString().toLowerCase(Locale.ROOT);
+-- 
+2.43.0
+

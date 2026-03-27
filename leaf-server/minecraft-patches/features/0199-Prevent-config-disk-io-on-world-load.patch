@@ -1,0 +1,39 @@
+From d2b274b95d24613aab32b02405d8dff9e5b92636 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Thu, 26 Mar 2026 19:47:34 +0000
+Subject: [PATCH 199/201] Prevent config disk io on world load
+
+---
+ net/minecraft/server/level/ServerLevel.java | 2 +-
+ net/minecraft/world/level/Level.java        | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
+index c96664d..e319590 100644
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -634,7 +634,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+     ) {
+         //ASP end
+         // CraftBukkit start
+-        super(serverLevelData, dimension, server.registryAccess(), levelStem.type(), false, isDebug, biomeZoomSeed, server.getMaxChainedNeighborUpdates(), gen, biomeProvider, env, spigotConfig -> server.paperConfigurations.createWorldConfig(io.papermc.paper.configuration.PaperConfigurations.createWorldContextMap(levelStorageAccess.levelDirectory.path(), serverLevelData.getLevelName(), dimension.location(), spigotConfig, server.registryAccess(), serverLevelData.getGameRules())), spigotConfig -> server.galeConfigurations.createWorldConfig(io.papermc.paper.configuration.PaperConfigurations.createWorldContextMap(levelStorageAccess.levelDirectory.path(), serverLevelData.getLevelName(), dimension.location(), spigotConfig, server.registryAccess(), serverLevelData.getGameRules())), dispatcher); // Paper - create paper world configs; Async-Anti-Xray: Pass executor // Gale - Gale configuration
++        super(serverLevelData, dimension, server.registryAccess(), levelStem.type(), false, isDebug, biomeZoomSeed, server.getMaxChainedNeighborUpdates(), gen, biomeProvider, env, spigotConfig -> bootstrap != null ? com.infernalsuite.asp.config.SlimePaperWorldConfig.initializeOrGet() : server.paperConfigurations.createWorldConfig(io.papermc.paper.configuration.PaperConfigurations.createWorldContextMap(levelStorageAccess.levelDirectory.path(), serverLevelData.getLevelName(), dimension.location(), spigotConfig, server.registryAccess(), serverLevelData.getGameRules())), spigotConfig -> bootstrap != null ? com.infernalsuite.asp.config.SlimePaperWorldConfig.initializeOrGet() : server.galeConfigurations.createWorldConfig(io.papermc.paper.configuration.PaperConfigurations.createWorldContextMap(levelStorageAccess.levelDirectory.path(), serverLevelData.getLevelName(), dimension.location(), spigotConfig, server.registryAccess(), serverLevelData.getGameRules())), dispatcher); // Paper - create paper world configs; Async-Anti-Xray: Pass executor // Gale - Gale configuration //ASP - Optimize world config
+         this.pvpMode = server.isPvpAllowed();
+         this.levelStorageAccess = levelStorageAccess;
+         this.uuid = bootstrap == null ? org.bukkit.craftbukkit.util.WorldUUID.getUUID(levelStorageAccess.levelDirectory.path().toFile()) : UUID.randomUUID(); //ASP - avoid IO calls
+diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
+index f679ed1..c543379 100644
+--- a/net/minecraft/world/level/Level.java
++++ b/net/minecraft/world/level/Level.java
+@@ -903,7 +903,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
+         this.maxSectionY = this.maxY >> 4;
+         this.sectionsCount = this.maxSectionY - this.minSectionY + 1;
+         // Paper end - getblock optimisations - cache world height/sections
+-        this.spigotConfig = new org.spigotmc.SpigotWorldConfig(((net.minecraft.world.level.storage.PrimaryLevelData) levelData).getLevelName()); // Spigot
++        this.spigotConfig = new org.spigotmc.SpigotWorldConfig(((net.minecraft.world.level.storage.PrimaryLevelData) levelData).getLevelName(), !(this instanceof com.infernalsuite.asp.level.SlimeLevelInstance)); // Spigot //ASP - Improve Slime IO
+         this.paperConfig = paperWorldConfigCreator.apply(this.spigotConfig); // Paper - create paper world config
+         this.galeConfig = galeWorldConfigCreator.apply(this.spigotConfig); // Gale - Gale configuration
+         this.purpurConfig = new org.purpurmc.purpur.PurpurWorldConfig(((net.minecraft.world.level.storage.PrimaryLevelData) levelData).getLevelName(), env); // Purpur - Purpur config files
+-- 
+2.43.0
+

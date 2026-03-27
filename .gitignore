@@ -1,3 +1,7 @@
+work/
+build-output.log
+*.log
+.gradle/
 # Mac filesystem dust
 .DS_Store/
 .DS_Store

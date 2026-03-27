@@ -1,0 +1,84 @@
+From dbcaa5ea92a77d0ab99309ab03f2aeeafff3426e Mon Sep 17 00:00:00 2001
+From: InfernalSuite <infernalsuite@gmail.com>
+Date: Thu, 26 Mar 2026 19:42:36 +0000
+Subject: [PATCH 195/201] ASP ServerLevel integration
+
+---
+ net/minecraft/server/level/ServerLevel.java | 39 +++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
+
+diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
+index 69c233a..6166d07 100644
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -590,7 +590,32 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+     public final MinecraftServer.TickTimes tickTimes60s = new MinecraftServer.TickTimes(1200);
+     // SparklyPaper end - track world's MSPT
+ 
++    public com.infernalsuite.asp.level.SlimeInMemoryWorld slimeInstance; // ASP
++
++    public ServerLevel(
++            MinecraftServer server,
++            Executor dispatcher,
++            LevelStorageSource.LevelStorageAccess levelStorageAccess,
++            net.minecraft.world.level.storage.PrimaryLevelData serverLevelData, // CraftBukkit
++            ResourceKey<Level> dimension,
++            LevelStem levelStem,
++            ChunkProgressListener progressListener,
++            boolean isDebug,
++            long biomeZoomSeed,
++            List<CustomSpawner> customSpawners,
++            boolean tickTime,
++            @Nullable RandomSequences randomSequences,
++            org.bukkit.World.Environment env, // CraftBukkit
++            org.bukkit.generator.ChunkGenerator gen, // CraftBukkit
++            org.bukkit.generator.BiomeProvider biomeProvider // CraftBukkit
++    ) {
++        //ASP start
++        this(null, server, dispatcher, levelStorageAccess, serverLevelData, dimension, levelStem, progressListener,
++                isDebug, biomeZoomSeed, customSpawners, tickTime, randomSequences, env, gen, biomeProvider);
++    }
++
+     public ServerLevel(
++        @Nullable com.infernalsuite.asp.level.SlimeBootstrap bootstrap,
+         MinecraftServer server,
+         Executor dispatcher,
+         LevelStorageSource.LevelStorageAccess levelStorageAccess,
+@@ -607,6 +632,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+         org.bukkit.generator.ChunkGenerator gen, // CraftBukkit
+         org.bukkit.generator.BiomeProvider biomeProvider // CraftBukkit
+     ) {
++        //ASP end
+         // CraftBukkit start
+         super(serverLevelData, dimension, server.registryAccess(), levelStem.type(), false, isDebug, biomeZoomSeed, server.getMaxChainedNeighborUpdates(), gen, biomeProvider, env, spigotConfig -> server.paperConfigurations.createWorldConfig(io.papermc.paper.configuration.PaperConfigurations.createWorldContextMap(levelStorageAccess.levelDirectory.path(), serverLevelData.getLevelName(), dimension.location(), spigotConfig, server.registryAccess(), serverLevelData.getGameRules())), spigotConfig -> server.galeConfigurations.createWorldConfig(io.papermc.paper.configuration.PaperConfigurations.createWorldContextMap(levelStorageAccess.levelDirectory.path(), serverLevelData.getLevelName(), dimension.location(), spigotConfig, server.registryAccess(), serverLevelData.getGameRules())), dispatcher); // Paper - create paper world configs; Async-Anti-Xray: Pass executor // Gale - Gale configuration
+         this.pvpMode = server.isPvpAllowed();
+@@ -651,6 +677,13 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+             chunkGenerator = new org.bukkit.craftbukkit.generator.CustomChunkGenerator(this, chunkGenerator, gen);
+         }
+         // CraftBukkit end
++        // ASP START
++        ChunkGenerator result = this.getGenerator(bootstrap);
++        if (result != null) {
++            chunkGenerator = result;
++        }
++        // ASP END
++
+         su.plo.matter.Globals.setupGlobals(this); // Leaf - Matter - Secure Seed
+         boolean flag = server.forceSynchronousWrites();
+         DataFixer fixerUpper = server.getFixerUpper();
+@@ -761,6 +794,12 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+         this.dragonFight = dragonFight;
+     }
+ 
++    // ASP START
++    public ChunkGenerator getGenerator(com.infernalsuite.asp.level.SlimeBootstrap bootstrap) {
++        return null;
++    }
++    // ASP END
++
+     public void setWeatherParameters(int clearTime, int weatherTime, boolean isRaining, boolean isThundering) {
+         this.serverLevelData.setClearWeatherTime(clearTime);
+         this.serverLevelData.setRainTime(weatherTime);
+-- 
+2.43.0
+
