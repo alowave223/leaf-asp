@@ -1,0 +1,4 @@
+work/
+build-output.log
+*.log
+.gradle/
