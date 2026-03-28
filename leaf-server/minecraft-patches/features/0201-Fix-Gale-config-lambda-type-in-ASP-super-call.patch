@@ -1,0 +1,25 @@
+From 6a79354e64ca3a8b702aec2c74cfc54ea14f51fa Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Thu, 26 Mar 2026 20:05:49 +0000
+Subject: [PATCH 201/201] Fix Gale config lambda type in ASP super call
+
+---
+ net/minecraft/server/level/ServerLevel.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
+index e319590..7d52c12 100644
+--- a/net/minecraft/server/level/ServerLevel.java
++++ b/net/minecraft/server/level/ServerLevel.java
+@@ -634,7 +634,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
+     ) {
+         //ASP end
+         // CraftBukkit start
+-        super(serverLevelData, dimension, server.registryAccess(), levelStem.type(), false, isDebug, biomeZoomSeed, server.getMaxChainedNeighborUpdates(), gen, biomeProvider, env, spigotConfig -> bootstrap != null ? com.infernalsuite.asp.config.SlimePaperWorldConfig.initializeOrGet() : server.paperConfigurations.createWorldConfig(io.papermc.paper.configuration.PaperConfigurations.createWorldContextMap(levelStorageAccess.levelDirectory.path(), serverLevelData.getLevelName(), dimension.location(), spigotConfig, server.registryAccess(), serverLevelData.getGameRules())), spigotConfig -> bootstrap != null ? com.infernalsuite.asp.config.SlimePaperWorldConfig.initializeOrGet() : server.galeConfigurations.createWorldConfig(io.papermc.paper.configuration.PaperConfigurations.createWorldContextMap(levelStorageAccess.levelDirectory.path(), serverLevelData.getLevelName(), dimension.location(), spigotConfig, server.registryAccess(), serverLevelData.getGameRules())), dispatcher); // Paper - create paper world configs; Async-Anti-Xray: Pass executor // Gale - Gale configuration //ASP - Optimize world config
++        super(serverLevelData, dimension, server.registryAccess(), levelStem.type(), false, isDebug, biomeZoomSeed, server.getMaxChainedNeighborUpdates(), gen, biomeProvider, env, spigotConfig -> bootstrap != null ? com.infernalsuite.asp.config.SlimePaperWorldConfig.initializeOrGet() : server.paperConfigurations.createWorldConfig(io.papermc.paper.configuration.PaperConfigurations.createWorldContextMap(levelStorageAccess.levelDirectory.path(), serverLevelData.getLevelName(), dimension.location(), spigotConfig, server.registryAccess(), serverLevelData.getGameRules())), spigotConfig -> bootstrap != null ? com.infernalsuite.asp.config.SlimeGaleWorldConfig.initializeOrGet() : server.galeConfigurations.createWorldConfig(io.papermc.paper.configuration.PaperConfigurations.createWorldContextMap(levelStorageAccess.levelDirectory.path(), serverLevelData.getLevelName(), dimension.location(), spigotConfig, server.registryAccess(), serverLevelData.getGameRules())), dispatcher); // Paper - create paper world configs; Async-Anti-Xray: Pass executor // Gale - Gale configuration //ASP - Optimize world config
+         this.pvpMode = server.isPvpAllowed();
+         this.levelStorageAccess = levelStorageAccess;
+         this.uuid = bootstrap == null ? org.bukkit.craftbukkit.util.WorldUUID.getUUID(levelStorageAccess.levelDirectory.path().toFile()) : UUID.randomUUID(); //ASP - avoid IO calls
+-- 
+2.43.0
+
