@@ -1,0 +1,17 @@
+.idea/
+.vscode/
+
+**/.gradle/
+.DS_Store
+build/
+**/run/
+
+**/*.iml
+
+aspaper-server/build.gradle.kts
+aspaper-server/src/minecraft/
+paper-server/
+aspaper-api/build.gradle.kts
+paper-api/
+paper-api-generator/
+aspaper-server/.gradle/
