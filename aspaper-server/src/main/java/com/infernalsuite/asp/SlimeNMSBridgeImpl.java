@@ -83,7 +83,13 @@ public class SlimeNMSBridgeImpl implements SlimeNMSBridge {
         SlimeLevelInstance instance = ((SlimeInMemoryWorld) this.loadInstance(defaultWorld, Level.OVERWORLD)).getInstance();
         DimensionDataStorage worldpersistentdata = instance.getDataStorage();
         instance.getCraftServer().scoreboardManager = new org.bukkit.craftbukkit.scoreboard.CraftScoreboardManager(instance.getServer(), instance.getScoreboard());
-        instance.getServer().commandStorage = new CommandStorage(worldpersistentdata);
+        try {
+            java.lang.reflect.Field f = net.minecraft.server.MinecraftServer.class.getDeclaredField("commandStorage");
+            f.setAccessible(true);
+            f.set(instance.getServer(), new CommandStorage(worldpersistentdata));
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException("Failed to set commandStorage", e);
+        }
 
         return true;
     }

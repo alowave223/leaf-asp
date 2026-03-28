@@ -152,10 +152,11 @@ public class NMSSlimeChunk implements SlimeChunk {
 
     public List<CompoundBinaryTag> getEntities(ChunkEntitySlices slices) {
         if (slices == null) return new ArrayList<>();
-        List<CompoundBinaryTag> entities = new ArrayList<>(slices.entities.size());
+        List<Entity> allEntities = slices.getAllEntities();
+        List<CompoundBinaryTag> entities = new ArrayList<>(allEntities.size());
 
         // Work by <gunther@gameslabs.net>
-        for (Entity entity : slices.entities) {
+        for (Entity entity : allEntities) {
             CompoundTag entityNbt = new CompoundTag();
             try {
                 if (entity.save(entityNbt)) entities.add(Converter.convertTag(entityNbt));

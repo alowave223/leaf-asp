@@ -53,12 +53,13 @@
      )
  }
  
-@@ -119,10 +_,14 @@
+@@ -119,10 +_,15 @@
      main {
          java { srcDir("../paper-server/src/main/java") }
          resources { srcDir("../paper-server/src/main/resources") }
 +        java { srcDir("../gale-server/src/main/java") } // Leaf - project setup
 +        resources { srcDir("../gale-server/src/main/resources") } // Leaf - project setup
++        java { srcDir("../aspaper-server/src/main/java") } // ASP - server sources
      }
      test {
          java { srcDir("../paper-server/src/test/java") }

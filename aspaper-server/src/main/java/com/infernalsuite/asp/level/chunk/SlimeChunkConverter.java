@@ -55,7 +55,16 @@ public class SlimeChunkConverter {
         {
             Registry<Biome> biomes = net.minecraft.server.MinecraftServer.getServer().registryAccess().lookupOrThrow(Registries.BIOME);
             PalettedContainer<Holder<Biome>> empty = new PalettedContainer<>(biomes.asHolderIdMap(), biomes.get(Biomes.PLAINS).orElseThrow(), PalettedContainer.Strategy.SECTION_BIOMES, null);
-            Tag tag = SerializableChunkData.makeBiomeCodec(biomes).encodeStart(NbtOps.INSTANCE, empty).getOrThrow();
+            com.mojang.serialization.Codec codec;
+            try {
+                java.lang.reflect.Method m = SerializableChunkData.class.getDeclaredMethod("makeBiomeCodec", Registry.class);
+                m.setAccessible(true);
+                codec = (com.mojang.serialization.Codec) m.invoke(null, biomes);
+            } catch (ReflectiveOperationException e) {
+                throw new RuntimeException("Failed to access makeBiomeCodec", e);
+            }
+            @SuppressWarnings("unchecked")
+            Tag tag = (Tag) codec.encodeStart(NbtOps.INSTANCE, empty).getOrThrow();
 
             EMPTY_BIOME_PALETTE = Converter.convertTag(tag);
         }
@@ -152,11 +161,18 @@ public class SlimeChunkConverter {
             upgradeData = UpgradeData.EMPTY;
         }
 
-        LevelChunk.PostLoadProcessor processor = SerializableChunkData.postLoadChunk(
-                instance,
-                new ArrayList<>(), //Entities are loaded by moonrise
-                chunk.getTileEntities().stream().map(tag -> (net.minecraft.nbt.CompoundTag) Converter.convertTag(tag)).toList()
-        );
+        LevelChunk.PostLoadProcessor processor;
+        try {
+            java.lang.reflect.Method m = SerializableChunkData.class.getDeclaredMethod("postLoadChunk", net.minecraft.server.level.ServerLevel.class, java.util.List.class, java.util.List.class);
+            m.setAccessible(true);
+            processor = (LevelChunk.PostLoadProcessor) m.invoke(null,
+                    instance,
+                    new ArrayList<>(), //Entities are loaded by moonrise
+                    chunk.getTileEntities().stream().map(tag -> (net.minecraft.nbt.CompoundTag) Converter.convertTag(tag)).toList()
+            );
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException("Failed to access postLoadChunk", e);
+        }
 
         SlimeChunkLevel nmsChunk = new SlimeChunkLevel(instance, chunk, pos, upgradeData, blockLevelChunkTicks,
                 fluidLevelChunkTicks, 0L, sections, processor, null);

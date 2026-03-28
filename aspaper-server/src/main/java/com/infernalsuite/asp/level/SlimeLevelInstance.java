@@ -104,16 +104,26 @@ public class SlimeLevelInstance extends ServerLevel {
 
         this.pvpMode = propertyMap.getValue(SlimeProperties.PVP);
 
-        this.entityDataController = new SlimeEntityDataLoader(
-                new ca.spottedleaf.moonrise.patches.chunk_system.io.datacontroller.EntityDataController.EntityRegionFileStorage(
-                        new RegionStorageInfo(levelStorageAccess.getLevelId(), worldKey, "entities"),
-                        levelStorageAccess.getDimensionPath(worldKey).resolve("entities"),
-                        MinecraftServer.getServer().forceSynchronousWrites()
-                ),
-                this.chunkTaskScheduler,
-                this
-        );
-        this.poiDataController = new SlimePoiDataLoader(this, this.chunkTaskScheduler);
+        // ASP - Use reflection to set private final fields since no public setters exist
+        ca.spottedleaf.moonrise.patches.chunk_system.scheduling.ChunkTaskScheduler scheduler = this.moonrise$getChunkTaskScheduler();
+        try {
+            java.lang.reflect.Field entityDataField = ServerLevel.class.getDeclaredField("entityDataController");
+            entityDataField.setAccessible(true);
+            entityDataField.set(this, new SlimeEntityDataLoader(
+                    new ca.spottedleaf.moonrise.patches.chunk_system.io.datacontroller.EntityDataController.EntityRegionFileStorage(
+                            new RegionStorageInfo(levelStorageAccess.getLevelId(), worldKey, "entities"),
+                            levelStorageAccess.getDimensionPath(worldKey).resolve("entities"),
+                            MinecraftServer.getServer().forceSynchronousWrites()
+                    ),
+                    scheduler,
+                    this
+            ));
+            java.lang.reflect.Field poiDataField = ServerLevel.class.getDeclaredField("poiDataController");
+            poiDataField.setAccessible(true);
+            poiDataField.set(this, new SlimePoiDataLoader(this, scheduler));
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException("Failed to set ASP data controllers", e);
+        }
     }
 
     @Override
