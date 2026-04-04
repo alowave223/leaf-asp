@@ -1,6 +1,6 @@
 name: CN | 功能建议
 description: 想要一个新功能或给 Leaf 提建议？
-labels: ["enhancement"]
+type: "Feature"
 
 body:
   - type: markdown
@@ -11,6 +11,6 @@ body:
   - type: textarea
     attributes:
       label: 你想加入什么功能？
-      description: 用几句话尽可能清晰, 详细的描述你所需要的功能或者建议。
+      description: 用几句话尽可能清晰，详细的描述你所需要的功能或者建议。
     validations:
       required: true

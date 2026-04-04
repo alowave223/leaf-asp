@@ -13,7 +13,7 @@ public class OnlyPlayerPushable extends ConfigModules {
 
     @Override
     public void onLoaded() {
-        enabled = config.getBoolean(getBasePath() + ".only-player-pushable", enabled, config.pickStringRegionBased(
+        enabled = config.getBoolean(getBasePath(), enabled, config.pickStringRegionBased(
             "Enable to make only player pushable",
             "是否只允许玩家被实体推动"
         ));

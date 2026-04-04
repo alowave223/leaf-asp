@@ -24,12 +24,18 @@ public class LeafGlobalConfig {
 
         configFile.addComments("config-version", pickStringRegionBased("""
                 Leaf Config
+
+                Website: https://www.leafmc.one/
+                Docs: https://www.leafmc.one/docs/getting-started
                 GitHub Repo: https://github.com/Winds-Studio/Leaf
                 Discord: https://discord.com/invite/gfgAwdSEuM""",
             """
-                Leaf Config
-                GitHub Repo: https://github.com/Winds-Studio/Leaf
-                QQ Group: 619278377"""));
+                Leaf 配置
+
+                官网: https://www.leafmc.one/zh/
+                文档: https://www.leafmc.one/zh/docs/getting-started
+                GitHub 仓库: https://github.com/Winds-Studio/Leaf
+                QQ社区群: 619278377"""));
 
         // Pre-structure to force order
         structureConfig();
@@ -141,17 +147,41 @@ public class LeafGlobalConfig {
 
     public Double getDouble(String path) {
         String value = configFile.getString(path, null);
-        return value == null ? null : Double.parseDouble(value); // TODO: Need to check whether need to handle NFE correctly
+        if (value == null) {
+            return null;
+        }
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            LeafConfig.LOGGER.warn("{} is not a valid number, skipped! Please check your configuration.", path, e);
+            return null;
+        }
     }
 
     public Integer getInt(String path) {
         String value = configFile.getString(path, null);
-        return value == null ? null : Integer.parseInt(value); // TODO: Need to check whether need to handle NFE correctly
+        if (value == null) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            LeafConfig.LOGGER.warn("{} is not a valid number, skipped! Please check your configuration.", path, e);
+            return null;
+        }
     }
 
     public Long getLong(String path) {
         String value = configFile.getString(path, null);
-        return value == null ? null : Long.parseLong(value); // TODO: Need to check whether need to handle NFE correctly
+        if (value == null) {
+            return null;
+        }
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            LeafConfig.LOGGER.warn("{} is not a valid number, skipped! Please check your configuration.", path, e);
+            return null;
+        }
     }
 
     public List<String> getList(String path) {

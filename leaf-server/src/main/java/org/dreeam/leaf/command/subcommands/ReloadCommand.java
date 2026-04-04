@@ -2,16 +2,15 @@ package org.dreeam.leaf.command.subcommands;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.framework.qual.DefaultQualifier;
+import net.minecraft.server.MinecraftServer;
 import org.dreeam.leaf.command.LeafCommand;
 import org.dreeam.leaf.command.PermissionedLeafSubcommand;
 import org.dreeam.leaf.config.LeafConfig;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.permissions.PermissionDefault;
 
-@DefaultQualifier(NonNull.class)
 public final class ReloadCommand extends PermissionedLeafSubcommand {
 
     public final static String LITERAL_ARGUMENT = "reload";
@@ -23,11 +22,24 @@ public final class ReloadCommand extends PermissionedLeafSubcommand {
 
     @Override
     public boolean execute(final CommandSender sender, final String subCommand, final String[] args) {
-        this.doReload(sender);
+        this.doGaleReload(sender);
+        this.doLeafReload(sender);
         return true;
     }
 
-    private void doReload(final CommandSender sender) {
+    // Gale start - Gale commands - /gale reload command
+    private void doGaleReload(final CommandSender sender) {
+        Command.broadcastCommandMessage(sender, Component.text("Reloading Gale config...", NamedTextColor.GREEN));
+
+        MinecraftServer server = ((CraftServer) sender.getServer()).getServer();
+        server.galeConfigurations.reloadConfigs(server);
+        server.server.reloadCount++;
+
+        Command.broadcastCommandMessage(sender, Component.text("Gale config reload complete.", NamedTextColor.GREEN));
+    }
+    // Gale end - Gale commands - /gale reload command
+
+    private void doLeafReload(final CommandSender sender) {
         Command.broadcastCommandMessage(sender, Component.text("Reloading Leaf config...", NamedTextColor.GREEN));
 
         LeafConfig.reloadAsync(sender);

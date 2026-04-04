@@ -1,32 +1,26 @@
 package org.dreeam.leaf.util.map;
 
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.dreeam.leaf.util.RegistryTypeManager;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
-import java.util.AbstractMap.SimpleEntry;
 
 // fast array backend map with O(1) get & put & remove
 public final class AttributeInstanceArrayMap implements Map<Holder<Attribute>, AttributeInstance>, Cloneable {
 
     private int size = 0;
-    private transient AttributeInstance[] a = new AttributeInstance[32];
-    private transient KeySet keys;
-    private transient Values values;
-    private transient EntrySet entries;
+    private transient @Nullable AttributeInstance[] a = new AttributeInstance[RegistryTypeManager.ATTRIBUTE_SIZE];
+    private transient @Nullable KeySet keys;
+    private transient @Nullable Values values;
+    private transient @Nullable EntrySet entries;
 
     public AttributeInstanceArrayMap() {
-        if (BuiltInRegistries.ATTRIBUTE.size() != 32) {
-            throw new IllegalStateException("Registered custom attribute");
-        }
     }
 
-    public AttributeInstanceArrayMap(final @NotNull Map<Holder<Attribute>, AttributeInstance> m) {
-        this();
+    public AttributeInstanceArrayMap(final Map<Holder<Attribute>, AttributeInstance> m) {
         putAll(m);
     }
 
@@ -58,20 +52,20 @@ public final class AttributeInstanceArrayMap implements Map<Holder<Attribute>, A
     @Override
     public boolean containsKey(Object key) {
         if (key instanceof Holder<?> holder && holder.value() instanceof Attribute attribute) {
-            int uid = attribute.uid;
-            return uid >= 0 && uid < a.length && a[uid] != null;
+            int id = attribute.id;
+            return id >= 0 && id < a.length && a[id] != null;
         }
         return false;
     }
 
     @Override
     public boolean containsValue(Object value) {
-        return value instanceof AttributeInstance val && Objects.equals(getInstance(val.getAttribute().value().uid), val);
+        return value instanceof AttributeInstance val && Objects.equals(getInstance(val.getAttribute().value().id), val);
     }
 
     @Override
-    public AttributeInstance get(Object key) {
-        return key instanceof Holder<?> holder && holder.value() instanceof Attribute attribute ? a[attribute.uid] : null;
+    public @Nullable AttributeInstance get(Object key) {
+        return key instanceof Holder<?> holder && holder.value() instanceof Attribute attribute ? a[attribute.id] : null;
     }
 
     @Nullable
@@ -80,27 +74,27 @@ public final class AttributeInstanceArrayMap implements Map<Holder<Attribute>, A
     }
 
     @Override
-    public AttributeInstance put(@NotNull Holder<Attribute> key, AttributeInstance value) {
-        int uid = key.value().uid;
-        AttributeInstance prev = a[uid];
-        setByIndex(uid, value);
+    public @Nullable AttributeInstance put(Holder<Attribute> key, @Nullable AttributeInstance value) {
+        int id = key.value().id;
+        AttributeInstance prev = a[id];
+        setByIndex(id, value);
         return prev;
     }
 
     @Override
-    public AttributeInstance remove(Object key) {
+    public @Nullable AttributeInstance remove(Object key) {
         if (!(key instanceof Holder<?> holder) || !(holder.value() instanceof Attribute attribute)) return null;
-        int uid = attribute.uid;
-        AttributeInstance prev = a[uid];
-        setByIndex(uid, null);
+        int id = attribute.id;
+        AttributeInstance prev = a[id];
+        setByIndex(id, null);
         return prev;
     }
 
     @Override
-    public void putAll(@NotNull Map<? extends Holder<Attribute>, ? extends AttributeInstance> m) {
-        for (AttributeInstance e : m.values()) {
-            if (e != null) {
-                setByIndex(e.getAttribute().value().uid, e);
+    public void putAll(Map<? extends Holder<Attribute>, ? extends AttributeInstance> m) {
+        if (!m.isEmpty()) {
+            for (AttributeInstance e : m.values()) {
+                setByIndex(e.getAttribute().value().id, e);
             }
         }
     }
@@ -112,7 +106,7 @@ public final class AttributeInstanceArrayMap implements Map<Holder<Attribute>, A
     }
 
     @Override
-    public @NotNull Set<Holder<Attribute>> keySet() {
+    public Set<Holder<Attribute>> keySet() {
         if (keys == null) {
             keys = new KeySet();
         }
@@ -120,7 +114,7 @@ public final class AttributeInstanceArrayMap implements Map<Holder<Attribute>, A
     }
 
     @Override
-    public @NotNull Collection<AttributeInstance> values() {
+    public Collection<AttributeInstance> values() {
         if (values == null) {
             values = new Values();
         }
@@ -128,7 +122,7 @@ public final class AttributeInstanceArrayMap implements Map<Holder<Attribute>, A
     }
 
     @Override
-    public @NotNull Set<Entry<Holder<Attribute>, AttributeInstance>> entrySet() {
+    public Set<Entry<Holder<Attribute>, AttributeInstance>> entrySet() {
         if (entries == null) {
             entries = new EntrySet();
         }
@@ -173,7 +167,7 @@ public final class AttributeInstanceArrayMap implements Map<Holder<Attribute>, A
 
     private final class KeySet extends AbstractSet<Holder<Attribute>> {
         @Override
-        public @NotNull Iterator<Holder<Attribute>> iterator() {
+        public Iterator<Holder<Attribute>> iterator() {
             return new KeyIterator();
         }
 
@@ -202,7 +196,7 @@ public final class AttributeInstanceArrayMap implements Map<Holder<Attribute>, A
             if (!hasNext()) throw new NoSuchElementException();
             currentIndex = nextIndex;
             nextIndex = findNextOccupied(nextIndex + 1);
-            return BuiltInRegistries.ATTRIBUTE.get(currentIndex).orElseThrow();
+            return RegistryTypeManager.ATTRIBUTE[currentIndex];
         }
 
         @Override
@@ -215,7 +209,7 @@ public final class AttributeInstanceArrayMap implements Map<Holder<Attribute>, A
 
     private final class Values extends AbstractCollection<AttributeInstance> {
         @Override
-        public @NotNull Iterator<AttributeInstance> iterator() {
+        public Iterator<AttributeInstance> iterator() {
             return new ValueIterator();
         }
 
@@ -240,7 +234,7 @@ public final class AttributeInstanceArrayMap implements Map<Holder<Attribute>, A
         }
 
         @Override
-        public AttributeInstance next() {
+        public @Nullable AttributeInstance next() {
             if (!hasNext()) throw new NoSuchElementException();
             currentIndex = nextIndex;
             AttributeInstance value = a[nextIndex];
@@ -258,7 +252,7 @@ public final class AttributeInstanceArrayMap implements Map<Holder<Attribute>, A
 
     private final class EntrySet extends AbstractSet<Entry<Holder<Attribute>, AttributeInstance>> {
         @Override
-        public @NotNull Iterator<Entry<Holder<Attribute>, AttributeInstance>> iterator() {
+        public Iterator<Entry<Holder<Attribute>, AttributeInstance>> iterator() {
             return new EntryIterator();
         }
 
@@ -289,17 +283,9 @@ public final class AttributeInstanceArrayMap implements Map<Holder<Attribute>, A
         public Entry<Holder<Attribute>, AttributeInstance> next() {
             if (!hasNext()) throw new NoSuchElementException();
             currentIndex = nextIndex;
-            Holder<Attribute> key = BuiltInRegistries.ATTRIBUTE.get(nextIndex).orElseThrow();
             AttributeInstance value = a[nextIndex];
             nextIndex = findNextOccupied(nextIndex + 1);
-            return new SimpleEntry<>(key, value) {
-                @Override
-                public AttributeInstance setValue(AttributeInstance newValue) {
-                    AttributeInstance old = put(key, newValue);
-                    super.setValue(newValue);
-                    return old;
-                }
-            };
+            return new MapEntry(currentIndex, Objects.requireNonNull(value));
         }
 
         @Override
@@ -312,6 +298,51 @@ public final class AttributeInstanceArrayMap implements Map<Holder<Attribute>, A
         }
     }
 
+    private final class MapEntry implements Entry<Holder<Attribute>, AttributeInstance> {
+        private final int key;
+        private AttributeInstance value;
+
+        MapEntry(int key, AttributeInstance value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        @Override
+        public Holder<Attribute> getKey() {
+            return RegistryTypeManager.ATTRIBUTE[this.key];
+        }
+
+        @Override
+        public AttributeInstance getValue() {
+            return value;
+        }
+
+        @Override
+        public AttributeInstance setValue(AttributeInstance newValue) {
+            AttributeInstance oldValue = this.value;
+            this.value = newValue;
+            AttributeInstanceArrayMap.this.setByIndex(this.key, newValue);
+            return oldValue;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Entry<?, ?> entry)) return false;
+            return Objects.equals(RegistryTypeManager.ATTRIBUTE[key], entry.getKey()) && Objects.equals(value, entry.getValue());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(key) ^ Objects.hashCode(value);
+        }
+
+        @Override
+        public String toString() {
+            return key + "=" + value;
+        }
+    }
+
     private int findNextOccupied(int start) {
         for (int i = start; i < a.length; i++) {
             if (a[i] != null) {
@@ -319,5 +350,9 @@ public final class AttributeInstanceArrayMap implements Map<Holder<Attribute>, A
             }
         }
         return -1;
+    }
+
+    public @Nullable AttributeInstance[] elements() {
+        return a;
     }
 }

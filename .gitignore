@@ -1,7 +1,10 @@
+<<<<<<< HEAD
 work/
 build-output.log
 *.log
 .gradle/
+=======
+>>>>>>> upstream/ver/1.21.11
 # Mac filesystem dust
 .DS_Store/
 .DS_Store

@@ -70,7 +70,6 @@ public class SpawnerSettings extends ConfigModules {
                 "Checks if there is water around that prevents spawning",
                 "检查周围是否有水阻止生成"
             ));
-
         ignoreSpawnRules = config.getBoolean(getBasePath() + ".checks.ignore-spawn-rules", ignoreSpawnRules,
             config.pickStringRegionBased(
                 "Ignore mob-specific spawn rules, like animals needing grass or specific biomes/blocks (does not affect light level or physical obstruction checks).",

@@ -1,15 +1,15 @@
 package org.dreeam.leaf.util.map;
 
 import it.unimi.dsi.fastutil.ints.IntArraySet;
-import it.unimi.dsi.fastutil.ints.IntSet;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Array;
 import java.util.*;
 
 public final class AttributeInstanceSet extends AbstractCollection<AttributeInstance> implements Set<AttributeInstance> {
-    public final IntSet inner;
+    public final IntArraySet inner;
     public final AttributeInstanceArrayMap map;
 
     public AttributeInstanceSet(AttributeInstanceArrayMap map) {
@@ -19,16 +19,20 @@ public final class AttributeInstanceSet extends AbstractCollection<AttributeInst
 
     @Override
     public boolean add(AttributeInstance instance) {
-        return inner.add(instance.getAttribute().value().uid);
+        return inner.add(instance.getAttribute().value().id);
+    }
+
+    public boolean addAttribute(Attribute attribute) {
+        return inner.add(attribute.id);
     }
 
     @Override
     public boolean remove(Object o) {
-        return o instanceof AttributeInstance instance && inner.remove(instance.getAttribute().value().uid);
+        return o instanceof AttributeInstance instance && inner.remove(instance.getAttribute().value().id);
     }
 
     @Override
-    public @NotNull Iterator<AttributeInstance> iterator() {
+    public Iterator<AttributeInstance> iterator() {
         return new CloneIterator(inner.toIntArray(), map);
     }
 
@@ -50,24 +54,24 @@ public final class AttributeInstanceSet extends AbstractCollection<AttributeInst
     @Override
     public boolean contains(Object o) {
         if (o instanceof AttributeInstance instance) {
-            return inner.contains(instance.getAttribute().value().uid);
+            return inner.contains(instance.getAttribute().value().id);
         }
         return false;
     }
 
     @Override
-    public AttributeInstance @NotNull [] toArray() {
+    public AttributeInstance[] toArray() {
         int[] innerClone = inner.toIntArray();
         AttributeInstance[] arr = new AttributeInstance[innerClone.length];
         for (int i = 0; i < arr.length; i++) {
-            arr[i] = map.getInstance(innerClone[i]);
+            arr[i] = Objects.requireNonNull(map.getInstance(innerClone[i]));
         }
         return arr;
     }
 
     @SuppressWarnings({"unchecked"})
     @Override
-    public <T> T @NotNull [] toArray(T[] a) {
+    public <T> @Nullable T[] toArray(@Nullable T @Nullable[] a) {
         if (a == null || (a.getClass() == AttributeInstance[].class && a.length == 0)) {
             return (T[]) toArray();
         }
@@ -81,7 +85,7 @@ public final class AttributeInstanceSet extends AbstractCollection<AttributeInst
         return a;
     }
 
-    static class CloneIterator implements Iterator<AttributeInstance> {
+    private static final class CloneIterator implements Iterator<AttributeInstance> {
         private final int[] array;
         private int index = 0;
         private final AttributeInstanceArrayMap map;
@@ -99,7 +103,7 @@ public final class AttributeInstanceSet extends AbstractCollection<AttributeInst
         @Override
         public AttributeInstance next() {
             if (!hasNext()) throw new NoSuchElementException();
-            return map.getInstance(array[index++]);
+            return Objects.requireNonNull(map.getInstance(array[index++]));
         }
     }
 

@@ -1,14 +1,14 @@
 package org.dreeam.leaf.config;
 
-import io.papermc.paper.configuration.GlobalConfiguration;
+import io.papermc.paper.SparksFly;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.dreeam.leaf.config.modules.misc.SentryDSN;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.dreeam.leaf.config.modules.opt.FastBiomeManagerSeedObfuscation;
+import org.jspecify.annotations.NullMarked;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -40,6 +40,7 @@ import java.util.jar.JarFile;
  *  Yoinked from: https://github.com/xGinko/AnarchyExploitFixes/ & https://github.com/LuminolMC/Luminol
  *  @author: @xGinko & @MrHua269
  */
+@NullMarked
 public class LeafConfig {
 
     public static final Logger LOGGER = LogManager.getLogger(LeafConfig.class.getSimpleName());
@@ -47,6 +48,9 @@ public class LeafConfig {
     protected static final String I_CONFIG_PKG = "org.dreeam.leaf.config.modules";
     protected static final String I_GLOBAL_CONFIG_FILE = "leaf-global.yml";
     protected static final String I_LEVEL_CONFIG_FILE = "leaf-world-defaults.yml"; // Leaf TODO - Per level config
+
+    private static final String SPARK_EXTRA_CONFIG_PROPERTY =  "spark.serverconfigs.extra";
+    private static final String SPARK_HIDDEN_PATHS_PROPERTY =  "spark.serverconfigs.hiddenpaths";
 
     private static LeafGlobalConfig leafGlobalConfig;
 
@@ -58,7 +62,7 @@ public class LeafConfig {
     /* Load & Reload */
 
     // Reload config (async)
-    public static @NotNull CompletableFuture<Void> reloadAsync(CommandSender sender) {
+    public static CompletableFuture<Void> reloadAsync(CommandSender sender) {
         return CompletableFuture.runAsync(() -> {
             try {
                 long begin = System.nanoTime();
@@ -119,7 +123,7 @@ public class LeafConfig {
 
     /* Scan classes under package */
 
-    public static @NotNull Set<Class<?>> getClasses(String pack) {
+    public static Set<Class<?>> getClasses(String pack) {
         Set<Class<?>> classes = new LinkedHashSet<>();
         String packageDirName = pack.replace('.', '/');
         Enumeration<URL> dirs;
@@ -222,14 +226,15 @@ public class LeafConfig {
             "config/gale-world-defaults.yml"
         ));
 
-        @Nullable String existing = System.getProperty("spark.serverconfigs.extra");
+        String existing = System.getProperty(SPARK_EXTRA_CONFIG_PROPERTY);
         if (existing != null) {
             extraConfigs.addAll(Arrays.asList(existing.split(",")));
         }
 
         // Use same way in spark's BukkitServerConfigProvider#getNestedFiles to get all world configs
-        // It may spam in the spark profiler, but it's ok, since spark uses YamlConfigParser.INSTANCE to
-        // get configs defined in extra config flag instead of using SplitYamlConfigParser.INSTANCE
+        // It may spam in the spark profiler, but it's ok, since spark uses YamlConfigParser.INSTANCE
+        // instead of using SplitYamlConfigParser.INSTANCE for the extra config
+        // However it's better to choose bundled spark for better view.
         for (World world : Bukkit.getWorlds()) {
             Path galeWorldFolder = world.getWorldFolder().toPath().resolve("gale-world.yml");
             extraConfigs.add(galeWorldFolder.toString().replace("\\", "/").replace("./", "")); // Gale world config
@@ -239,21 +244,24 @@ public class LeafConfig {
     }
 
     private static List<String> buildSparkHiddenPaths() {
-        @Nullable String existing = System.getProperty("spark.serverconfigs.hiddenpaths");
+        String existing = System.getProperty(SPARK_HIDDEN_PATHS_PROPERTY);
 
         List<String> extraHidden = existing != null ? new ArrayList<>(Arrays.asList(existing.split(","))) : new ArrayList<>();
         extraHidden.add(SentryDSN.sentryDsnConfigPath); // Hide Sentry DSN key
+        extraHidden.add(FastBiomeManagerSeedObfuscation.seedObfKeyPath); // Hide FastBiomeManagerSeedObfuscation key
 
         return extraHidden;
     }
 
+    // Sync with LeafServerConfigProvider
     public static void regSparkExtraConfig() {
-        if (GlobalConfiguration.get().spark.enabled || Bukkit.getServer().getPluginManager().getPlugin("spark") != null) {
+        // Spark plugin is used
+        if (SparksFly.isPluginPreferred() && Bukkit.getServer().getPluginManager().getPlugin("spark") != null) {
             String extraConfigs = String.join(",", buildSparkExtraConfigs());
-            String hiddenPaths = String.join(",", buildSparkHiddenPaths());
+            System.setProperty(SPARK_EXTRA_CONFIG_PROPERTY, extraConfigs);
 
-            System.setProperty("spark.serverconfigs.extra", extraConfigs);
-            System.setProperty("spark.serverconfigs.hiddenpaths", hiddenPaths);
+            String hiddenPaths = String.join(",", buildSparkHiddenPaths());
+            System.setProperty(SPARK_HIDDEN_PATHS_PROPERTY, hiddenPaths);
         }
     }
 

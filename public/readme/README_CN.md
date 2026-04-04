@@ -2,11 +2,11 @@
 <div align="center">
 
 [![下载](https://img.shields.io/badge/releases-blue?label=%e4%b8%8b%e8%bd%bd&style=for-the-badge&colorA=19201a&colorB=298046)](https://www.leafmc.one/zh/download)⠀
-[![Github Actions 构建](https://img.shields.io/github/actions/workflow/status/Winds-Studio/Leaf/build-1214.yml?label=%e6%9e%84%e5%bb%ba&style=for-the-badge&colorA=19201a&colorB=298046)](https://github.com/Winds-Studio/Leaf/actions)⠀
+[![Github Actions 构建](https://img.shields.io/github/actions/workflow/status/Winds-Studio/Leaf/build-12111.yml?label=%e6%9e%84%e5%bb%ba&style=for-the-badge&colorA=19201a&colorB=298046)](https://github.com/Winds-Studio/Leaf/actions)⠀
 ![QQ](https://img.shields.io/badge/619278377-blue?label=QQ%e7%be%a4&style=for-the-badge&colorA=19201a&colorB=298046)
-[![文档](https://img.shields.io/badge/leafmc.one/zh/docs-blue?label=%e6%96%87%e6%a1%a3&style=for-the-badge&colorA=19201a&colorB=298046)](https://www.leafmc.one/zh/docs)
+[![文档](https://img.shields.io/badge/leafmc.one/zh/docs-blue?label=%e6%96%87%e6%a1%a3&style=for-the-badge&colorA=19201a&colorB=298046)](https://www.leafmc.one/zh/docs/getting-started)
 
-**Leaf** 是一个基于 [Paper](https://papermc.io/) 的分支，专为高自定义和高性能而设计，基于 [Gale](https://github.com/Dreeam-qwq/Gale) 之上，并融合了其他核心的优化和修复。
+**Leaf** 是一个基于 [Paper](https://papermc.io/) 的分支，专为高自定义和高性能而设计。
 </div>
 
 > [!WARNING]
@@ -15,9 +15,9 @@
 [English](../../README.md) | **中文**
 
 ## 🍃 特点
-- **基于 [Gale](https://github.com/Dreeam-qwq/Gale)**，以获得更好的性能
+- **基于 [Paper](https://papermc.io/)**，以获得更好的性能和灵活的 API
 - **异步**寻路、生物生成和实体追踪
-- **大量优化**融合自 [其他核心](#-致谢) 和我们自己的的补丁
+- **大量优化**融合自 [其他核心](#-致谢) 和我们自己的补丁
 - **完全兼容** Spigot 和 Paper 插件
 - **最新依赖**，保持所有依赖项为最新版本
 - **允许用户名使用所有字符**，包括中文和其他字符
@@ -39,12 +39,10 @@
 如果您喜欢我们的工作，欢迎通过我们的 [Open Collective](https://opencollective.com/Winds-Studio) 或 [Dreeam 的爱发电](https://afdian.com/a/Dreeam) 进行赞助 :)
 
 ## 📥 下载
-从我们的 [官网](https://www.leafmc.one/zh/download) 下载 Leaf，或在 [GitHub Action](https://github.com/Winds-Studio/Leaf/actions) 获取最新构建版本
-
-**请注意需要 Java 21 以上。**
+从我们的 [官网](https://www.leafmc.one/zh/download) 下载 Leaf，或在 [GitHub Releases](https://github.com/Winds-Studio/Leaf/releases) 获取最新构建版本
 
 ## 📄 文档
-关于如何使用/配置 Leaf 的文档：[www.leafmc.one/zh/docs](https://www.leafmc.one/zh/docs)
+关于如何使用/配置 Leaf 的文档：[Leaf 文档](https://www.leafmc.one/zh/docs/getting-started)
 
 ## 📦 构建
 构建用于分发的 Paperclip JAR：
@@ -52,7 +50,9 @@
 ./gradlew applyAllPatches && ./gradlew createMojmapPaperclipJar
 ```
 
-## 🧪 API
+## 📦 API
+<details>
+<summary>点击展开</summary>
 
 ### Maven
 ```xml
@@ -65,7 +65,7 @@
 <dependency>
     <groupId>cn.dreeam.leaf</groupId>
     <artifactId>leaf-api</artifactId>
-    <version>1.21.4-R0.1-SNAPSHOT</version>
+    <version>1.21.11-R0.1-SNAPSHOT</version>
     <scope>provided</scope>
 </dependency>
 ```
@@ -78,18 +78,17 @@ repositories {
 }
 
 dependencies {
-    compileOnly("cn.dreeam.leaf:leaf-api:1.21.4-R0.1-SNAPSHOT")
+    compileOnly("cn.dreeam.leaf:leaf-api:1.21.11-R0.1-SNAPSHOT")
 }
 
 java {
   toolchain.languageVersion.set(JavaLanguageVersion.of(21))
 }
 ```
+</details>
 
 ## ⚖️ 许可证
-Leaf 根据其上游项目及其他材料，采用多种开源许可证授权，
-
-请参阅 [LICENSE.md](../../LICENSE.md) 获取完整的许可信息。
+Leaf 根据其上游项目采用多种开源许可证授权。请参阅 [LICENSE.md](../../LICENSE.md) 了解完整的详细信息。
 
 ## 📜 致谢
 感谢以下项目。Leaf 包含了一些取自这些项目的补丁。<br>
@@ -123,17 +122,33 @@ Leaf 根据其上游项目及其他材料，采用多种开源许可证授权，
 </details>
 
 ## 🔥 特别感谢
-<a href="https://cloud.swordsman.com.cn/"><img src="../image/JiankeServer.jpg" alt="Jianke Cloud Host" align="left" hspace="8"></a>
-剑客云 | cloud of swordsman
-
-如果你想找一个低价高性能、低延迟的云服务商，剑客云是个不错的选择！你可以在 [这里](https://cloud.swordsman.com.cn/?i8ab42c) 注册。
-
-If you want to find a cheaper, high performance, stable, lower latency host, then cloud of swordsman is a good choice! Registers and purchases in [here](https://cloud.swordsman.com.cn/?i8ab42c).
-
----
-![YourKit](https://www.yourkit.com/images/yklogo.png)
-
-YourKit 通过创新和智能的工具支持开源项目，用于监控和分析 Java 和 .NET 应用程序。
-YourKit 是 [YourKit Java Profiler](https://www.yourkit.com/java/profiler/)、
-[YourKit .NET Profiler](https://www.yourkit.com/dotnet-profiler/) 和
-[YourKit YouMonitor](https://www.yourkit.com/youmonitor/) 的创造者。
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <a href="https://cloud.swordsman.com.cn/?i8ab42c">
+        <img src="../image/JiankeServer.jpg" alt="Jianke Cloud Host" width="250">
+      </a>
+      <br>
+      <b>剑客云 | cloud of swordsman</b>
+      <p>如果你想找一个低价高性能、低延迟的云服务商，剑客云是个不错的选择！你可以在 <a href="https://cloud.swordsman.com.cn/?i8ab42c">这里</a> 注册。</p>
+      <p>If you want to find a cheaper, high performance, stable, lower latency host, then cloud of swordsman is a good choice! Registers and purchases in <a href="https://cloud.swordsman.com.cn/?i8ab42c">here</a>.</p>
+    </td>
+    <td width="50%" align="center">
+      <a href="https://www.rainyun.com/NzE2NTc1_">
+        <img src="../image/RainYun.jpg" alt="雨云" width="250">
+      </a>
+      <br>
+      <b>雨云 | RainYun</b>
+      <p>国际多线路选择，配套云存储 — 购买服务后七天内不满意可以申请退订，强大的技术支持团队和高在线率客服。雨云云服务器，用稳定和性价比，助力您快速上云。点击前往 <a href="https://www.rainyun.com/NzE2NTc1_">雨云</a>。</p>
+      <p>Global multi-line routing with cloud storage. Refund available within 7 days. Reliable uptime and expert support. RainYun — stable, cost-effective, and ready for fast cloud deployment. Visit <a href="https://www.rainyun.com/NzE2NTc1_">RainYun</a>.</p>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <a href="https://www.yourkit.com/">
+        <img src="https://www.yourkit.com/images/yklogo.png" alt="YourKit" width="300">
+      </a>
+      <p>YourKit 通过创新和智能的工具支持开源项目，用于监控和分析 Java 和 .NET 应用程序。YourKit 是 <a href="https://www.yourkit.com/java/profiler/">YourKit Java Profiler</a>、<a href="https://www.yourkit.com/dotnet-profiler/">YourKit .NET Profiler</a> 和 <a href="https://www.yourkit.com/youmonitor/">YourKit YouMonitor</a> 的创造者。</p>
+    </td>
+  </tr>
+</table>
