@@ -7,7 +7,6 @@ import com.infernalsuite.asp.plugin.config.ConfigManager;
 import com.infernalsuite.asp.plugin.config.WorldData;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.command.CommandSender;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.incendo.cloud.context.CommandContext;
 import org.incendo.cloud.context.CommandInput;

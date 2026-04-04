@@ -13,13 +13,20 @@ import org.jspecify.annotations.NullMarked;
  * If the event is cancelled, the block will not execute the explosion hit actions.
  */
 @NullMarked
+public class BlockExplosionHitEvent extends BlockEvent implements Cancellable {
+    private static final HandlerList handlers = new HandlerList();
     private boolean cancelled;
+    private final Entity source;
     private final ExplosionResult result;
 
     public BlockExplosionHitEvent(final Block block, final Entity source, final ExplosionResult result) {
         super(block);
         this.source = source;
+        this.result = result;
+    }
+
     @Override
+    public HandlerList getHandlers() {
         return handlers;
     }
 

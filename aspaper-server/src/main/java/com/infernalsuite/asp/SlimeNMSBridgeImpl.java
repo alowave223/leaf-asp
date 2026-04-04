@@ -13,10 +13,8 @@ import com.infernalsuite.asp.level.SlimeInMemoryWorld;
 import com.infernalsuite.asp.level.SlimeLevelInstance;
 import com.mojang.serialization.Lifecycle;
 import net.kyori.adventure.nbt.CompoundBinaryTag;
-import net.kyori.adventure.nbt.ListBinaryTag;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -24,6 +22,7 @@ import net.minecraft.server.WorldLoader;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dedicated.DedicatedServerProperties;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.GameRuleMap;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.dimension.LevelStem;
@@ -31,8 +30,6 @@ import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.storage.CommandStorage;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.PrimaryLevelData;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -42,7 +39,6 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Locale;
 
 public class SlimeNMSBridgeImpl implements SlimeNMSBridge {
@@ -173,12 +169,12 @@ public class SlimeNMSBridgeImpl implements SlimeNMSBridge {
 
     @Override
     public int getCurrentVersion() {
-        return SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+        return SharedConstants.getCurrentVersion().dataVersion().version();
     }
 
     public void registerWorld(SlimeLevelInstance server) {
         MinecraftServer mcServer = MinecraftServer.getServer();
-        mcServer.initWorld(server, server.serverLevelData, mcServer.getWorldData(), server.serverLevelData.worldGenOptions());
+        mcServer.initWorld(server, server.serverLevelData, server.serverLevelData.worldGenOptions());
 
         mcServer.addLevel(server);
     }
@@ -207,14 +203,6 @@ public class SlimeNMSBridgeImpl implements SlimeNMSBridge {
             throw new RuntimeException(ex); // TODO do something better with this?
         }
 
-        // level.setReady(true);
-        level.setSpawnSettings(world.getPropertyMap().getValue(SlimeProperties.ALLOW_MONSTERS));
-
-        CompoundTag nmsExtraData = (CompoundTag) Converter.convertTag(CompoundBinaryTag.from(world.getExtraData()));
-
-        //Attempt to read PDC
-        if (nmsExtraData.get("BukkitValues") != null) level.getWorld().readBukkitValues(nmsExtraData.get("BukkitValues"));
-
         return level;
     }
 
@@ -226,10 +214,10 @@ public class SlimeNMSBridgeImpl implements SlimeNMSBridge {
         MinecraftServer mcServer = MinecraftServer.getServer();
         DedicatedServerProperties serverProps = ((DedicatedServer) mcServer).getProperties();
         String worldName = world.getName();
-        WorldLoader.DataLoadContext context = mcServer.worldLoader;
+        WorldLoader.DataLoadContext context = mcServer.worldLoaderContext;
 
-        LevelSettings worldsettings = new LevelSettings(worldName, serverProps.gamemode, false, serverProps.difficulty,
-                true, new GameRules(context.dataConfiguration().enabledFeatures()), mcServer.worldLoader.dataConfiguration());
+        LevelSettings worldsettings = new LevelSettings(worldName, serverProps.gameMode.get(), false, serverProps.difficulty.get(),
+                true, new GameRules(context.dataConfiguration().enabledFeatures(), GameRuleMap.of()), mcServer.worldLoaderContext.dataConfiguration());
 
         WorldOptions worldoptions = new WorldOptions(0, false, false);
 
