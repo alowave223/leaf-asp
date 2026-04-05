@@ -102,6 +102,14 @@ public class SlimeLevelInstance extends ServerLevel {
                 Collections.emptyList(), true, null, environment, null, null);
         this.slimeInstance = new SlimeInMemoryWorld(slimeBootstrap, this);
 
+        // ASP - Replace the chunk generator with SlimeLevelGenerator after construction
+        // This replaces the ServerLevel source patch approach used in upstream ASP
+        ChunkGenerator slimeGenerator = createSlimeGenerator(slimeBootstrap);
+        net.minecraft.world.level.chunk.status.WorldGenContext oldCtx = this.chunkSource.chunkMap.worldGenContext;
+        this.chunkSource.chunkMap.worldGenContext = new net.minecraft.world.level.chunk.status.WorldGenContext(
+                oldCtx.level(), slimeGenerator, oldCtx.structureManager(), oldCtx.lightEngine(),
+                oldCtx.mainThreadExecutor(), oldCtx.unsavedListener()
+        );
 
         SlimePropertyMap propertyMap = slimeBootstrap.initial().getPropertyMap();
 
