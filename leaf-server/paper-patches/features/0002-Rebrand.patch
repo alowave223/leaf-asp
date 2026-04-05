@@ -526,7 +526,7 @@ diff --git a/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java b/src/main/
 index 74ffdc823e66fc5ec027c4b7c462382bcbfe2be2..ca846f76d5ff53c547e1ce943e4e68cf4d5aa046 100644
 --- a/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java
 +++ b/src/main/java/io/papermc/paper/ServerBuildInfoImpl.java
-@@ -31,6 +31,12 @@ public record ServerBuildInfoImpl(
+@@ -31,6 +31,13 @@ public record ServerBuildInfoImpl(
      private static final String ATTRIBUTE_GIT_COMMIT = "Git-Commit";
  
      private static final String BRAND_PAPER_NAME = "Paper";
@@ -535,11 +535,12 @@ index 74ffdc823e66fc5ec027c4b7c462382bcbfe2be2..ca846f76d5ff53c547e1ce943e4e68cf
 +    private static final String BRAND_PUFFERFISH_NAME = "Pufferfish";
 +    private static final String BRAND_PURPUR_NAME = "Purpur";
 +    private static final String BRAND_LEAF_NAME = "Leaf";
++    private static final String BRAND_ADVANCED_SLIME_PAPER_NAME = "AdvancedSlimePaper"; // ASP
 +    // Leaf end - Rebrand
  
      private static final String BUILD_DEV = "DEV";
  
-@@ -42,9 +48,9 @@ public record ServerBuildInfoImpl(
+@@ -42,9 +49,9 @@ public record ServerBuildInfoImpl(
          this(
              getManifestAttribute(manifest, ATTRIBUTE_BRAND_ID)
                  .map(Key::key)
@@ -551,7 +552,7 @@ index 74ffdc823e66fc5ec027c4b7c462382bcbfe2be2..ca846f76d5ff53c547e1ce943e4e68cf
              SharedConstants.getCurrentVersion().id(),
              SharedConstants.getCurrentVersion().name(),
              getManifestAttribute(manifest, ATTRIBUTE_BUILD_NUMBER)
-@@ -61,7 +67,13 @@ public record ServerBuildInfoImpl(
+@@ -61,7 +68,14 @@ public record ServerBuildInfoImpl(
  
      @Override
      public boolean isBrandCompatible(final @NotNull Key brandId) {
@@ -561,7 +562,8 @@ index 74ffdc823e66fc5ec027c4b7c462382bcbfe2be2..ca846f76d5ff53c547e1ce943e4e68cf
 +            || brandId.equals(BRAND_PAPER_ID)
 +            || brandId.equals(BRAND_GALE_ID) // Gale - branding changes
 +            || brandId.equals(BRAND_PUFFERFISH_ID)
-+            || brandId.equals(BRAND_PURPUR_ID);
++            || brandId.equals(BRAND_PURPUR_ID)
++            || brandId.equals(BRAND_ADVANCED_SLIME_PAPER_ID); // ASP
 +            // Leaf end - Rebrand
      }
  

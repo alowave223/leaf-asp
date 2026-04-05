@@ -52,7 +52,7 @@ diff --git a/src/main/java/io/papermc/paper/ServerBuildInfo.java b/src/main/java
 index fb1fe2651e53a9bf46b3632c638e13eea9dcda93..c198304386e83edc2ec582fdf66d97d624004771 100644
 --- a/src/main/java/io/papermc/paper/ServerBuildInfo.java
 +++ b/src/main/java/io/papermc/paper/ServerBuildInfo.java
-@@ -25,6 +25,22 @@ public interface ServerBuildInfo {
+@@ -25,6 +25,26 @@ public interface ServerBuildInfo {
       */
      Key BRAND_PURPUR_ID = Key.key("purpurmc", "purpur");
      // Purpur end
@@ -70,6 +70,10 @@ index fb1fe2651e53a9bf46b3632c638e13eea9dcda93..c198304386e83edc2ec582fdf66d97d6
 +     * The brand id for Leaf.
 +     */
 +    Key BRAND_LEAF_ID = Key.key("winds-studio", "leaf");
++    /**
++     * The brand id for AdvancedSlimePaper.
++     */
++    Key BRAND_ADVANCED_SLIME_PAPER_ID = Key.key("infernalsuite", "advancedslimepaper"); // ASP
 +    // Leaf end - Rebrand
 +
      /**
