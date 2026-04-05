@@ -3,6 +3,7 @@ package com.infernalsuite.asp.level;
 import com.mojang.datafixers.DataFixer;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,10 +21,9 @@ public class ReadOnlyDimensionDataStorage extends DimensionDataStorage {
         super(dataFolder, fixerUpper, registries);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public @Nullable <T extends SavedData> T get(SavedData.@NotNull Factory<T> factory, @NotNull String name) {
-        Optional<SavedData> optional = this.cache.get(name);
+    public @Nullable <T extends SavedData> T get(SavedDataType<T> type) {
+        Optional<SavedData> optional = this.cache.get(type);
         if(optional == null) {
             return null;
         }

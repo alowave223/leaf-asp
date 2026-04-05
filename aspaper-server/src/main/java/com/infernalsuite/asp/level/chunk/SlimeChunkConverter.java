@@ -11,7 +11,6 @@ import com.infernalsuite.asp.level.SlimeLevelInstance;
 import com.infernalsuite.asp.skeleton.SlimeChunkSectionSkeleton;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import net.kyori.adventure.nbt.BinaryTag;
 import net.kyori.adventure.nbt.CompoundBinaryTag;
 import net.kyori.adventure.nbt.ListBinaryTag;
 import net.minecraft.SharedConstants;
@@ -23,7 +22,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
@@ -33,6 +31,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.*;
 import net.minecraft.world.level.chunk.storage.SerializableChunkData;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.feature.foliageplacers.PineFoliagePlacer;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.ticks.LevelChunkTicks;
 import net.minecraft.world.ticks.SavedTick;
@@ -41,30 +40,25 @@ import java.util.*;
 
 public class SlimeChunkConverter {
 
+    private static final Codec<List<SavedTick<Block>>> BLOCK_TICKS_CODEC = SavedTick.codec(BuiltInRegistries.BLOCK.byNameCodec()).listOf();
+    private static final Codec<List<SavedTick<Fluid>>> FLUID_TICKS_CODEC = SavedTick.codec(BuiltInRegistries.FLUID.byNameCodec()).listOf();
+
     private static final CompoundBinaryTag EMPTY_BLOCK_STATE_PALETTE;
     private static final CompoundBinaryTag EMPTY_BIOME_PALETTE;
 
     // Optimized empty section serialization
     static {
+        PalettedContainerFactory factory = PalettedContainerFactory.create(net.minecraft.server.MinecraftServer.getServer().registryAccess());
         {
-            PalettedContainer<BlockState> empty = new PalettedContainer<>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES, null);
-            Tag tag = SerializableChunkData.BLOCK_STATE_CODEC.encodeStart(NbtOps.INSTANCE, empty).getOrThrow();
+            PalettedContainer<BlockState> empty = new PalettedContainer<>(Blocks.AIR.defaultBlockState(),factory.blockStatesStrategy(), null);
+            Tag tag = factory.blockStatesContainerCodec().encodeStart(NbtOps.INSTANCE, empty).getOrThrow();
 
             EMPTY_BLOCK_STATE_PALETTE = Converter.convertTag(tag);
         }
         {
             Registry<Biome> biomes = net.minecraft.server.MinecraftServer.getServer().registryAccess().lookupOrThrow(Registries.BIOME);
-            PalettedContainer<Holder<Biome>> empty = new PalettedContainer<>(biomes.asHolderIdMap(), biomes.get(Biomes.PLAINS).orElseThrow(), PalettedContainer.Strategy.SECTION_BIOMES, null);
-            com.mojang.serialization.Codec codec;
-            try {
-                java.lang.reflect.Method m = SerializableChunkData.class.getDeclaredMethod("makeBiomeCodec", Registry.class);
-                m.setAccessible(true);
-                codec = (com.mojang.serialization.Codec) m.invoke(null, biomes);
-            } catch (ReflectiveOperationException e) {
-                throw new RuntimeException("Failed to access makeBiomeCodec", e);
-            }
-            @SuppressWarnings("unchecked")
-            Tag tag = (Tag) codec.encodeStart(NbtOps.INSTANCE, empty).getOrThrow();
+            PalettedContainer<Holder<Biome>> empty = new PalettedContainer<>(biomes.get(Biomes.PLAINS).orElseThrow(), factory.biomeStrategy(), null);
+            Tag tag = factory.biomeContainerRWCodec().encodeStart(NbtOps.INSTANCE, empty).getOrThrow();
 
             EMPTY_BIOME_PALETTE = Converter.convertTag(tag);
         }
@@ -88,8 +82,7 @@ public class SlimeChunkConverter {
 
         Registry<Biome> biomeRegistry = instance.registryAccess().lookupOrThrow(Registries.BIOME);
 
-        Codec<PalettedContainer<Holder<Biome>>> codec = PalettedContainer.codecRW(biomeRegistry.asHolderIdMap(),
-                biomeRegistry.holderByNameCodec(), PalettedContainer.Strategy.SECTION_BIOMES, biomeRegistry.get(Biomes.PLAINS).orElseThrow(), null);
+        Codec<PalettedContainer<Holder<Biome>>> codec = instance.palettedContainerFactory().biomeContainerRWCodec();
 
         for (int sectionId = 0; sectionId < chunk.getSections().length; sectionId++) {
             SlimeChunkSection slimeSection = chunk.getSections()[sectionId];
@@ -107,12 +100,12 @@ public class SlimeChunkConverter {
 
                 PalettedContainer<BlockState> blockPalette;
                 if (slimeSection.getBlockStatesTag() != null) {
-                    DataResult<PalettedContainer<BlockState>> dataresult = SerializableChunkData.BLOCK_STATE_CODEC.parse(NbtOps.INSTANCE, Converter.convertTag(slimeSection.getBlockStatesTag())).promotePartial((s) -> {
+                    DataResult<PalettedContainer<BlockState>> dataresult = instance.palettedContainerFactory().blockStatesContainerCodec().parse(NbtOps.INSTANCE, Converter.convertTag(slimeSection.getBlockStatesTag())).promotePartial((s) -> {
                         System.out.println("Recoverable error when parsing section " + x + "," + z + ": " + s); // todo proper logging
                     });
                     blockPalette = dataresult.getOrThrow(); // todo proper logging
                 } else {
-                    blockPalette = new PalettedContainer<>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES, null);
+                    blockPalette = new PalettedContainer<>(Blocks.AIR.defaultBlockState(), instance.palettedContainerFactory().blockStatesStrategy(), null);
                 }
 
                 PalettedContainer<Holder<Biome>> biomePalette;
@@ -123,7 +116,7 @@ public class SlimeChunkConverter {
                     });
                     biomePalette = dataresult.getOrThrow(); // todo proper logging
                 } else {
-                    biomePalette = new PalettedContainer<>(biomeRegistry.asHolderIdMap(), biomeRegistry.get(Biomes.PLAINS).orElseThrow(), PalettedContainer.Strategy.SECTION_BIOMES, null);
+                    biomePalette = new PalettedContainer<>(biomeRegistry.get(Biomes.PLAINS).orElseThrow(), instance.palettedContainerFactory().biomeStrategy(), null);
                 }
 
                 if (sectionId < sections.length) {
@@ -135,9 +128,9 @@ public class SlimeChunkConverter {
 
         LevelChunkTicks<Block> blockLevelChunkTicks;
         if(chunk.getBlockTicks() != null) {
-            List<SavedTick<Block>> blockList = SavedTick.loadTickList(
-                    (ListTag) Converter.convertTag(chunk.getBlockTicks()), string -> BuiltInRegistries.BLOCK.getOptional(ResourceLocation.tryParse(string)), pos
-            );
+            ListTag tag = (ListTag) Converter.convertTag(chunk.getBlockTicks());
+            List<SavedTick<Block>> blockList = SavedTick.filterTickListForChunk(BLOCK_TICKS_CODEC.parse(NbtOps.INSTANCE, tag).resultOrPartial().orElse(List.of()), pos);
+
             blockLevelChunkTicks = new LevelChunkTicks<>(blockList);
         } else {
             blockLevelChunkTicks = new LevelChunkTicks<>();
@@ -145,9 +138,9 @@ public class SlimeChunkConverter {
 
         LevelChunkTicks<Fluid> fluidLevelChunkTicks;
         if(chunk.getFluidTicks() != null) {
-            List<SavedTick<Fluid>> fluidList = SavedTick.loadTickList(
-                (ListTag) Converter.convertTag(chunk.getFluidTicks()), string -> BuiltInRegistries.FLUID.getOptional(ResourceLocation.tryParse(string)), pos
-            );
+            ListTag tag = (ListTag) Converter.convertTag(chunk.getFluidTicks());
+            List<SavedTick<Fluid>> fluidList = SavedTick.filterTickListForChunk(FLUID_TICKS_CODEC.parse(NbtOps.INSTANCE, tag).resultOrPartial().orElse(List.of()), pos);
+
             fluidLevelChunkTicks = new LevelChunkTicks<>(fluidList);
         } else {
             fluidLevelChunkTicks = new LevelChunkTicks<>();
@@ -161,18 +154,11 @@ public class SlimeChunkConverter {
             upgradeData = UpgradeData.EMPTY;
         }
 
-        LevelChunk.PostLoadProcessor processor;
-        try {
-            java.lang.reflect.Method m = SerializableChunkData.class.getDeclaredMethod("postLoadChunk", net.minecraft.server.level.ServerLevel.class, java.util.List.class, java.util.List.class);
-            m.setAccessible(true);
-            processor = (LevelChunk.PostLoadProcessor) m.invoke(null,
-                    instance,
-                    new ArrayList<>(), //Entities are loaded by moonrise
-                    chunk.getTileEntities().stream().map(tag -> (net.minecraft.nbt.CompoundTag) Converter.convertTag(tag)).toList()
-            );
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException("Failed to access postLoadChunk", e);
-        }
+        LevelChunk.PostLoadProcessor processor = SerializableChunkData.postLoadChunk(
+                instance,
+                new ArrayList<>(), //Entities are loaded by moonrise
+                chunk.getTileEntities().stream().map(tag -> (net.minecraft.nbt.CompoundTag) Converter.convertTag(tag)).toList()
+        );
 
         SlimeChunkLevel nmsChunk = new SlimeChunkLevel(instance, chunk, pos, upgradeData, blockLevelChunkTicks,
                 fluidLevelChunkTicks, 0L, sections, processor, null);
@@ -211,13 +197,13 @@ public class SlimeChunkConverter {
         return nmsChunk;
     }
 
-    public static SlimeChunkSection convertChunkSection(Codec<PalettedContainerRO<Holder<Biome>>> codec, LevelChunkSection section, NibbleArray blockLightArray, NibbleArray skyLightArray) {
+    public static SlimeChunkSection convertChunkSection(Codec<PalettedContainerRO<Holder<Biome>>> biomeCodec, Codec<PalettedContainer<BlockState>> blockCodec, LevelChunkSection section, NibbleArray blockLightArray, NibbleArray skyLightArray) {
         // Block Data
         CompoundBinaryTag blockStateTag;
         if (section.hasOnlyAir()) {
             blockStateTag = EMPTY_BLOCK_STATE_PALETTE;
         } else {
-            Tag data = SerializableChunkData.BLOCK_STATE_CODEC.encodeStart(NbtOps.INSTANCE, section.getStates()).getOrThrow(); // todo error handling
+            Tag data = blockCodec.encodeStart(NbtOps.INSTANCE, section.getStates()).getOrThrow(); // todo error handling
             blockStateTag = Converter.convertTag(data);
         }
 
@@ -227,7 +213,7 @@ public class SlimeChunkConverter {
         if (biomes.data.palette().getSize() == 1 && biomes.data.palette().maybeHas((h) -> h.is(Biomes.PLAINS))) {
             biomeTag = EMPTY_BIOME_PALETTE;
         } else {
-            Tag biomeData = codec.encodeStart(NbtOps.INSTANCE, section.getBiomes()).getOrThrow(); // todo error handling
+            Tag biomeData = biomeCodec.encodeStart(NbtOps.INSTANCE, section.getBiomes()).getOrThrow(); // todo error handling
             biomeTag = Converter.convertTag(biomeData);
         }
 
@@ -235,23 +221,17 @@ public class SlimeChunkConverter {
     }
 
     public static ListBinaryTag convertSavedFluidTicks(List<SavedTick<Fluid>> ticks) {
-        ListBinaryTag.Builder<BinaryTag> builder = ListBinaryTag.builder();
-        for (SavedTick<Fluid> tick : ticks) {
-            builder.add((CompoundBinaryTag) Converter.convertTag(tick.save(fluid -> BuiltInRegistries.FLUID.getKey(fluid).toString())));
-        }
-        return builder.build();
+        Tag tag = FLUID_TICKS_CODEC.encodeStart(NbtOps.INSTANCE, ticks).getOrThrow();
+        return Converter.convertTag(tag);
     }
 
     public static ListBinaryTag convertSavedBlockTicks(List<SavedTick<Block>> ticks) {
-        ListBinaryTag.Builder<BinaryTag> builder = ListBinaryTag.builder();
-        for (SavedTick<Block> tick : ticks) {
-            builder.add((CompoundBinaryTag) Converter.convertTag(tick.save(block -> BuiltInRegistries.BLOCK.getKey(block).toString())));
-        }
-        return builder.build();
+        Tag tag = BLOCK_TICKS_CODEC.encodeStart(NbtOps.INSTANCE, ticks).getOrThrow();
+        return Converter.convertTag(tag);
     }
 
     public static CompoundTag createPoiChunk(SlimeChunk chunk) {
-        return createPoiChunkFromSlimeSections(chunk.getPoiChunkSections(),  SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+        return createPoiChunkFromSlimeSections(chunk.getPoiChunkSections(),  SharedConstants.getCurrentVersion().dataVersion().version());
     }
 
     public static CompoundTag createPoiChunkFromSlimeSections(CompoundBinaryTag slimePoiSections, int dataVersion) {
@@ -269,7 +249,7 @@ public class SlimeChunkConverter {
     public static CompoundBinaryTag getSlimeSectionsFromPoiCompound(CompoundTag save) {
         if(save == null) return null;
 
-        CompoundTag sections = save.getCompound("Sections");
+        CompoundTag sections = save.getCompoundOrEmpty("Sections");
         return Converter.convertTag(sections);
     }
 }

@@ -45,7 +45,7 @@ public final class ChunkDataLoadTask implements CommonLoadTask {
 
         this.task = this.scheduler.createChunkTask(this.chunkX, this.chunkZ, () -> {
             try {
-                SlimeChunk chunk = this.world.slimeInstance.getChunk(this.chunkX, this.chunkZ);
+                SlimeChunk chunk = ((com.infernalsuite.asp.level.SlimeLevelInstance) this.world).slimeInstance.getChunk(this.chunkX, this.chunkZ);
                 this.onRun.accept(new GenericDataLoadTask.TaskResult<>(runOnMain(chunk), null));
             } catch (final Exception e) {
                 LOGGER.error("ERROR", e);
@@ -64,7 +64,7 @@ public final class ChunkDataLoadTask implements CommonLoadTask {
 
     private ChunkAccess runOnMain(final SlimeChunk data) {
         try {
-            LevelChunk chunk = this.world.slimeInstance.createChunk(chunkX, chunkZ, data);
+            LevelChunk chunk = ((com.infernalsuite.asp.level.SlimeLevelInstance) this.world).slimeInstance.createChunk(chunkX, chunkZ, data);
             return new ImposterProtoChunk(chunk, false);
         } catch (final Exception e) {
             LOGGER.error("Failed to parse main tasks for task {}, chunk data will be lost", this, e);

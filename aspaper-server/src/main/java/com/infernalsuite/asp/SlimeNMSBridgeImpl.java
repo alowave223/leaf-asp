@@ -1,8 +1,5 @@
 package com.infernalsuite.asp;
 
-import ca.spottedleaf.dataconverter.converters.DataConverter;
-import ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry;
-import ca.spottedleaf.dataconverter.types.nbt.NBTMapType;
 import com.infernalsuite.asp.api.SlimeDataConverter;
 import com.infernalsuite.asp.api.SlimeNMSBridge;
 import com.infernalsuite.asp.api.world.SlimeWorld;
@@ -13,16 +10,18 @@ import com.infernalsuite.asp.level.SlimeInMemoryWorld;
 import com.infernalsuite.asp.level.SlimeLevelInstance;
 import com.mojang.serialization.Lifecycle;
 import net.kyori.adventure.nbt.CompoundBinaryTag;
+import net.kyori.adventure.nbt.ListBinaryTag;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.WorldLoader;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dedicated.DedicatedServerProperties;
-import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.GameRuleMap;
+import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.level.gamerules.GameRuleMap;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.dimension.LevelStem;
@@ -30,6 +29,8 @@ import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.storage.CommandStorage;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.PrimaryLevelData;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -39,6 +40,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 
 public class SlimeNMSBridgeImpl implements SlimeNMSBridge {
@@ -79,13 +81,7 @@ public class SlimeNMSBridgeImpl implements SlimeNMSBridge {
         SlimeLevelInstance instance = ((SlimeInMemoryWorld) this.loadInstance(defaultWorld, Level.OVERWORLD)).getInstance();
         DimensionDataStorage worldpersistentdata = instance.getDataStorage();
         instance.getCraftServer().scoreboardManager = new org.bukkit.craftbukkit.scoreboard.CraftScoreboardManager(instance.getServer(), instance.getScoreboard());
-        try {
-            java.lang.reflect.Field f = net.minecraft.server.MinecraftServer.class.getDeclaredField("commandStorage");
-            f.setAccessible(true);
-            f.set(instance.getServer(), new CommandStorage(worldpersistentdata));
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException("Failed to set commandStorage", e);
-        }
+        instance.getServer().commandStorage = new CommandStorage(worldpersistentdata);
 
         return true;
     }
@@ -192,7 +188,7 @@ public class SlimeNMSBridgeImpl implements SlimeNMSBridge {
             default -> throw new IllegalArgumentException("Unknown dimension supplied");
         };
 
-        ResourceKey<Level> worldKey = dimensionOverride == null ? ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(worldName.toLowerCase(Locale.ENGLISH))) : dimensionOverride;
+        ResourceKey<Level> worldKey = dimensionOverride == null ? ResourceKey.create(Registries.DIMENSION, Identifier.parse(worldName.toLowerCase(Locale.ENGLISH))) : dimensionOverride;
         LevelStem stem = MinecraftServer.getServer().registries().compositeAccess().lookupOrThrow(Registries.LEVEL_STEM).get(dimension).orElseThrow().value();
 
         SlimeLevelInstance level;

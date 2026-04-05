@@ -16,23 +16,17 @@ import net.kyori.adventure.nbt.LongArrayBinaryTag;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.chunk.LevelChunkSection;
-import net.minecraft.world.level.chunk.PalettedContainer;
-import net.minecraft.world.level.chunk.PalettedContainerRO;
-import net.minecraft.world.level.chunk.storage.SerializableChunkData;
+import net.minecraft.world.level.chunk.*;
 import net.minecraft.world.level.lighting.LevelLightEngine;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.ticks.SavedTick;
+import net.minecraft.world.level.storage.TagValueOutput;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,10 +65,7 @@ public class NMSSlimeChunk implements SlimeChunk {
         SlimeChunkSection[] sections = new SlimeChunkSection[this.chunk.getSectionsCount()];
         LevelLightEngine lightEngine = chunk.getLevel().getChunkSource().getLightEngine();
 
-        Registry<Biome> biomeRegistry = chunk.biomeRegistry;
-
-        Codec<PalettedContainerRO<Holder<Biome>>> codec = PalettedContainer.codecRO(biomeRegistry.asHolderIdMap(), biomeRegistry.holderByNameCodec(),
-                PalettedContainer.Strategy.SECTION_BIOMES, biomeRegistry.get(Biomes.PLAINS).orElseThrow());
+        Registry<Biome> biomeRegistry = chunk.getLevel().registryAccess().lookupOrThrow(Registries.BIOME);
 
         for (int sectionId = 0; sectionId < chunk.getSections().length; sectionId++) {
             LevelChunkSection section = chunk.getSections()[sectionId];
@@ -86,7 +77,8 @@ public class NMSSlimeChunk implements SlimeChunk {
             // Sky light Nibble Array
             NibbleArray skyLightArray = Converter.convertArray(lightEngine.getLayerListener(LightLayer.SKY).getDataLayerData(SectionPos.of(chunk.getPos(), sectionId)));
 
-            sections[sectionId] = SlimeChunkConverter.convertChunkSection(codec, section, blockLightArray, skyLightArray);
+            sections[sectionId] = SlimeChunkConverter.convertChunkSection(chunk.level.palettedContainerFactory().biomeContainerCodec(),
+                    chunk.level.palettedContainerFactory().blockStatesContainerCodec(), section, blockLightArray, skyLightArray);
         }
 
         return sections;
@@ -152,16 +144,19 @@ public class NMSSlimeChunk implements SlimeChunk {
 
     public List<CompoundBinaryTag> getEntities(ChunkEntitySlices slices) {
         if (slices == null) return new ArrayList<>();
-        List<Entity> allEntities = slices.getAllEntities();
-        List<CompoundBinaryTag> entities = new ArrayList<>(allEntities.size());
+        List<CompoundBinaryTag> entities = new ArrayList<>(slices.entities.size());
 
-        // Work by <gunther@gameslabs.net>
-        for (Entity entity : allEntities) {
-            CompoundTag entityNbt = new CompoundTag();
-            try {
-                if (entity.save(entityNbt)) entities.add(Converter.convertTag(entityNbt));
-            } catch (final Exception e) {
-                LOGGER.error("Could not save the entity = {}, exception = {}", entity, e);
+        try(final ProblemReporter.ScopedCollector scopedCollector = new ProblemReporter.ScopedCollector(ChunkAccess.problemPath(chunk.getPos()), LOGGER))  {
+            // Work by <gunther@gameslabs.net>
+            for (Entity entity : slices.entities) {
+                try {
+                    TagValueOutput tagValueOutput = TagValueOutput.createWithContext(scopedCollector, entity.registryAccess());
+
+                    if (entity.save(tagValueOutput))
+                        entities.add(Converter.convertTag(tagValueOutput.buildResult()));
+                } catch (final Exception e) {
+                    LOGGER.error("Could not save the entity = {}, exception = {}", entity, e);
+                }
             }
         }
 
